@@ -1,0 +1,75 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Testing and Code Quality
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs and databases
+*.log
+mlruns/
+.mlflow/
+mlartifacts/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment variables & secrets
+.env
+.env.*
+secrets.yaml
+
+# DVC local cache and run metadata
+.dvc/cache
+.dvc/tmp
+/data/raw/*
+!/data/raw/.gitkeep
+!/data/raw/*.dvc
+!/data/raw/.gitignore
+/data/processed/*
+!/data/processed/.gitkeep
+!/data/processed/*.dvc
+!/data/processed/.gitignore
+!/data/processed/feature_metadata.json
+/models/*
+!/models/.gitkeep
+!/models/*.dvc
+!/models/.gitignore
+!/models/training_summary.json

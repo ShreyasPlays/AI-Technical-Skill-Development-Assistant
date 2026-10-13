@@ -1,0 +1,109 @@
+project_name: "AI-Technical-Skill-Development-Assistant"
+version: "1.0.0"
+
+paths:
+  raw_data_path: "data/raw/skills_dataset.csv"
+  processed_train_path: "data/processed/train.parquet"
+  processed_test_path: "data/processed/test.parquet"
+  features_meta_path: "data/processed/feature_metadata.json"
+  models_dir: "models"
+  reports_dir: "reports"
+  metrics_path: "reports/metrics.json"
+  evaluation_report_path: "reports/phase1_evaluation.md"
+
+data:
+  test_size: 0.2
+  random_state: 42
+  stratify: true
+  target_column: "target_role"
+  skill_features:
+    - "python"
+    - "sql"
+    - "machine_learning"
+    - "dsa"
+    - "git"
+    - "web_development"
+    - "cloud_computing"
+    - "system_design"
+    - "statistics"
+    - "deep_learning"
+  context_features:
+    - "years_experience"
+    - "projects_completed"
+    - "problems_solved"
+
+roles:
+  Machine Learning Engineer:
+    python: 4
+    sql: 3
+    machine_learning: 4
+    dsa: 4
+    git: 3
+    web_development: 1
+    cloud_computing: 3
+    system_design: 3
+    statistics: 4
+    deep_learning: 4
+  Data Scientist:
+    python: 4
+    sql: 4
+    machine_learning: 4
+    dsa: 3
+    git: 3
+    web_development: 1
+    cloud_computing: 2
+    system_design: 2
+    statistics: 5
+    deep_learning: 3
+  Full Stack Developer:
+    python: 3
+    sql: 3
+    machine_learning: 1
+    dsa: 4
+    git: 4
+    web_development: 5
+    cloud_computing: 3
+    system_design: 4
+    statistics: 2
+    deep_learning: 1
+  DevOps Engineer:
+    python: 3
+    sql: 2
+    machine_learning: 1
+    dsa: 3
+    git: 5
+    web_development: 2
+    cloud_computing: 5
+    system_design: 4
+    statistics: 2
+    deep_learning: 1
+  Data Analyst:
+    python: 3
+    sql: 5
+    machine_learning: 2
+    dsa: 2
+    git: 2
+    web_development: 1
+    cloud_computing: 2
+    system_design: 1
+    statistics: 4
+    deep_learning: 1
+
+models:
+  random_state: 42
+  decision_tree:
+    max_depth: 6
+    min_samples_split: 10
+    min_samples_leaf: 5
+    criterion: "gini"
+  random_forest:
+    n_estimators: 100
+    max_depth: 8
+    min_samples_split: 8
+    min_samples_leaf: 4
+    criterion: "gini"
+    n_jobs: -1
+
+mlflow:
+  experiment_name: "Technical_Skill_Assistant"
+  tracking_uri: "mlruns"
