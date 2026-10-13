@@ -1,0 +1,15 @@
+# Add patterns of files dvc should ignore, which could be
+# files that you do not want to track with dvc or files
+# that you do not want to trigger a pipeline re-run.
+#
+# Learn more at <https://dvc.org/doc/user-guide/dvcignore>
+
+.git/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.ruff_cache/
+.pytest_cache/
+mlruns/
+.mlflow/

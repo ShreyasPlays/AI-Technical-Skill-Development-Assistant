@@ -1,0 +1,5 @@
+outs:
+- md5: 1280aa1c7cb0b66dcda792cd0a9ddd11
+  size: 59019
+  hash: md5
+  path: skills_dataset.csv
