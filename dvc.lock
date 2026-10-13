@@ -1,0 +1,102 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python -m src.feature_engineering
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 40cc55887700ac090a657c1ecb7ffca6
+      size: 2190
+    - path: data/raw/skills_dataset.csv
+      hash: md5
+      md5: 1280aa1c7cb0b66dcda792cd0a9ddd11
+      size: 59019
+    - path: src/data_loader.py
+      hash: md5
+      md5: cb01d9acbbc2b3196e37455a1b904e2f
+      size: 5524
+    - path: src/feature_engineering.py
+      hash: md5
+      md5: f66ff44b9f09da836343bbaf1a129b49
+      size: 6262
+    - path: src/preprocess.py
+      hash: md5
+      md5: 364fe068db1827224911a7c9b5bab498
+      size: 6392
+    outs:
+    - path: data/processed/feature_metadata.json
+      hash: md5
+      md5: 3afab6513808be43a6011f71e8e5dcbe
+      size: 1590
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: d0e7fe877fa29dc5f0425d77b7f3fab4
+      size: 23689
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 3c3ab0506663ae8b0d428a422a725317
+      size: 38363
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 40cc55887700ac090a657c1ecb7ffca6
+      size: 2190
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 3c3ab0506663ae8b0d428a422a725317
+      size: 38363
+    - path: src/train.py
+      hash: md5
+      md5: 8b585163a7010fdb50dfcb3153368a1f
+      size: 5742
+    outs:
+    - path: models/decision_tree.joblib
+      hash: md5
+      md5: f68f7e641604c604707318924ed4aeb8
+      size: 9057
+    - path: models/random_forest.joblib
+      hash: md5
+      md5: 6d9fc2b958dc2416891806ddc1f7b735
+      size: 1075489
+    - path: models/training_summary.json
+      hash: md5
+      md5: f77adc7e98a312b8ef9d3dc02c36220e
+      size: 353
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 40cc55887700ac090a657c1ecb7ffca6
+      size: 2190
+    - path: data/processed/feature_metadata.json
+      hash: md5
+      md5: 3afab6513808be43a6011f71e8e5dcbe
+      size: 1590
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: d0e7fe877fa29dc5f0425d77b7f3fab4
+      size: 23689
+    - path: models/decision_tree.joblib
+      hash: md5
+      md5: f68f7e641604c604707318924ed4aeb8
+      size: 9057
+    - path: models/random_forest.joblib
+      hash: md5
+      md5: 6d9fc2b958dc2416891806ddc1f7b735
+      size: 1075489
+    - path: src/evaluate.py
+      hash: md5
+      md5: e8f70b8ad821558c354b7f595649fb4f
+      size: 11789
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: 064dd49b8a6da776d162a59bd8f0a3b3
+      size: 383
+    - path: reports/phase1_evaluation.md
+      hash: md5
+      md5: 817ab00dfb392806eadb2f4c14901efe
+      size: 3531

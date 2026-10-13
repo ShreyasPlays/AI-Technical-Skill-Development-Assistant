@@ -1,0 +1,17 @@
+{
+  "decision_tree": {
+    "accuracy": 0.8792,
+    "precision_macro": 0.8815,
+    "recall_macro": 0.8792,
+    "f1_macro": 0.8795,
+    "f1_weighted": 0.8795
+  },
+  "random_forest": {
+    "accuracy": 0.9167,
+    "precision_macro": 0.918,
+    "recall_macro": 0.9167,
+    "f1_macro": 0.9168,
+    "f1_weighted": 0.9168
+  },
+  "champion_model": "Random Forest Classifier"
+}

@@ -1,0 +1,40 @@
+stages:
+  preprocess:
+    cmd: python -m src.feature_engineering
+    deps:
+      - data/raw/skills_dataset.csv
+      - src/data_loader.py
+      - src/preprocess.py
+      - src/feature_engineering.py
+      - configs/config.yaml
+    outs:
+      - data/processed/train.parquet
+      - data/processed/test.parquet
+      - data/processed/feature_metadata.json
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/processed/train.parquet
+      - src/train.py
+      - configs/config.yaml
+    outs:
+      - models/decision_tree.joblib
+      - models/random_forest.joblib
+      - models/training_summary.json
+
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+      - data/processed/test.parquet
+      - data/processed/feature_metadata.json
+      - models/decision_tree.joblib
+      - models/random_forest.joblib
+      - src/evaluate.py
+      - configs/config.yaml
+    metrics:
+      - reports/metrics.json:
+          cache: false
+    outs:
+      - reports/phase1_evaluation.md:
+          cache: false
