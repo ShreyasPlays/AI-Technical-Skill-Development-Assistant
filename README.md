@@ -117,6 +117,8 @@ The environment is strictly pinned and tested on Python 3.11.9:
   - **3 Contextual Metrics:** Years of Experience, Projects Completed, Problems Solved.
   - **Target Variable:** `target_role` (Multi-class: 5 career paths).
 - **Missing Values:** 0 nulls, 0 duplicate records.
+- **Dataset Card:** Formally documented in [reports/dataset_card.md](reports/dataset_card.md)
+- **Validation Notebook:** Thorough 26-section diagnostic report in [notebooks/01_dataset_acquisition_validation.ipynb](notebooks/01_dataset_acquisition_validation.ipynb)
 
 ---
 
@@ -139,9 +141,11 @@ AI-Technical-Skill-Development-Assistant/
 │   ├── random_forest.joblib      # Champion baseline 2 model artifact
 │   └── training_summary.json     # MLflow Run IDs and training stats
 ├── notebooks/
+│   ├── 01_dataset_acquisition_validation.ipynb # Member 1: Complete 26-section validation deliverable
 │   ├── 01_data_exploration.ipynb # Schema, distributions, correlations
 │   └── 02_baseline_experiments.ipynb # Model comparison & evaluation
 ├── reports/
+│   ├── dataset_card.md           # Member 1: Formal benchmark dataset card
 │   ├── metrics.json              # DVC tracked metrics
 │   └── phase1_evaluation.md      # Detailed evaluation report
 ├── src/
@@ -255,8 +259,9 @@ ruff check src tests
 
 ---
 
-## 12. License & Author
+## 12. License & Contributors
 
-- **Author:** ShreyasPlays (<shreyas662006@gmail.com>)
+- **Author & Project Lead:** ShreyasPlays (<shreyas662006@gmail.com>)
+- **Member 1 (Dataset Acquisition & Validation):** Siddharth Dhanush R (<siddharthdhanush7@gmail.com>)
 - **Project:** Engineering College Project Review - Phase 1: Development & Reproducibility
-- **License:** MIT License
+- **License:** MIT License (Note: Dataset reuse permissions remain unverified pending committed root LICENSE file)
