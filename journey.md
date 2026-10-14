@@ -21,6 +21,7 @@
 | **Milestone 8: Evaluation & Reporting** | Completed | Evaluated models on 240 held-out samples. Generated `reports/metrics.json` and comprehensive review report `reports/phase1_evaluation.md`. Selected Random Forest as Champion. |
 | **Milestone 9: DVC Tracking & Pipeline** | Completed | Initialized DVC, tracked raw dataset with DVC pointer, created multi-stage `dvc.yaml` (`preprocess`, `train`, `evaluate`), and verified end-to-end execution via `dvc repro`. |
 | **Milestone 10: Automated Testing & Code Quality** | Completed | Created 14 unit and integration tests across data loader, skill gap, feature engineering, and models. Passed 100% tests with pytest. Enforced Ruff linting. |
+| **Milestone 11: Dataset Acquisition & Validation** | Completed | Contributor: Siddharth Dhanush R (Member 1). Cryptographic provenance verification (SHA-256/MD5), hardened data loader with bounds/duplicate checks, 5 new unit tests (19 total passed), comprehensive 26-section notebook (`notebooks/01_dataset_acquisition_validation.ipynb`), and verified dataset card (`reports/dataset_card.md`). |
 
 ---
 

@@ -70,3 +70,115 @@ def test_reproducible_dataset_generation(tmp_path: Path):
     df2 = generate_benchmark_dataset(csv2, n_samples=100, random_state=42)
 
     pd.testing.assert_frame_equal(df1, df2)
+
+
+def test_fractional_skill_validation(tmp_path: Path):
+    """Verify fractional skill ratings raise validation error."""
+    bad_df = pd.DataFrame({
+        "python": [3.5, 4.0],  # fractional skill rating
+        "sql": [3, 4],
+        "machine_learning": [1, 2],
+        "dsa": [2, 3],
+        "git": [2, 3],
+        "web_development": [1, 1],
+        "cloud_computing": [2, 2],
+        "system_design": [1, 1],
+        "statistics": [2, 2],
+        "deep_learning": [1, 1],
+        "years_experience": [1.0, 2.0],
+        "projects_completed": [3, 4],
+        "problems_solved": [50, 100],
+        "target_role": ["Data Analyst", "Data Scientist"],
+    })
+    bad_csv = tmp_path / "fractional.csv"
+    bad_df.to_csv(bad_csv, index=False)
+
+    with pytest.raises(ValueError, match="non-integer proficiency"):
+        load_raw_data(bad_csv)
+
+
+def test_negative_experience_validation(tmp_path: Path):
+    """Verify negative years_experience raises validation error."""
+    bad_df = pd.DataFrame({
+        "python": [3, 4],
+        "sql": [3, 4],
+        "machine_learning": [1, 2],
+        "dsa": [2, 3],
+        "git": [2, 3],
+        "web_development": [1, 1],
+        "cloud_computing": [2, 2],
+        "system_design": [1, 1],
+        "statistics": [2, 2],
+        "deep_learning": [1, 1],
+        "years_experience": [-1.5, 2.0],  # negative experience
+        "projects_completed": [3, 4],
+        "problems_solved": [50, 100],
+        "target_role": ["Data Analyst", "Data Scientist"],
+    })
+    bad_csv = tmp_path / "neg_exp.csv"
+    bad_df.to_csv(bad_csv, index=False)
+
+    with pytest.raises(ValueError, match="years_experience"):
+        load_raw_data(bad_csv)
+
+
+def test_invalid_project_count_validation(tmp_path: Path):
+    """Verify zero or non-positive projects_completed raises validation error."""
+    bad_df = pd.DataFrame({
+        "python": [3, 4],
+        "sql": [3, 4],
+        "machine_learning": [1, 2],
+        "dsa": [2, 3],
+        "git": [2, 3],
+        "web_development": [1, 1],
+        "cloud_computing": [2, 2],
+        "system_design": [1, 1],
+        "statistics": [2, 2],
+        "deep_learning": [1, 1],
+        "years_experience": [1.0, 2.0],
+        "projects_completed": [0, 4],  # 0 projects is invalid (< 1)
+        "problems_solved": [50, 100],
+        "target_role": ["Data Analyst", "Data Scientist"],
+    })
+    bad_csv = tmp_path / "zero_proj.csv"
+    bad_df.to_csv(bad_csv, index=False)
+
+    with pytest.raises(ValueError, match="projects_completed"):
+        load_raw_data(bad_csv)
+
+
+def test_unsupported_target_role_validation(tmp_path: Path):
+    """Verify unknown or unlisted target role raises validation error."""
+    bad_df = pd.DataFrame({
+        "python": [3, 4],
+        "sql": [3, 4],
+        "machine_learning": [1, 2],
+        "dsa": [2, 3],
+        "git": [2, 3],
+        "web_development": [1, 1],
+        "cloud_computing": [2, 2],
+        "system_design": [1, 1],
+        "statistics": [2, 2],
+        "deep_learning": [1, 1],
+        "years_experience": [1.0, 2.0],
+        "projects_completed": [3, 4],
+        "problems_solved": [50, 100],
+        "target_role": ["Data Analyst", "Quantum Cryptographer"],  # unsupported role
+    })
+    bad_csv = tmp_path / "bad_role.csv"
+    bad_df.to_csv(bad_csv, index=False)
+
+    with pytest.raises(ValueError, match="unsupported roles"):
+        load_raw_data(bad_csv)
+
+
+def test_duplicate_columns_validation(tmp_path: Path):
+    """Verify duplicate column names in CSV raise validation error."""
+    csv_text = "python,sql,machine_learning,dsa,git,web_development,cloud_computing,system_design,statistics,deep_learning,years_experience,projects_completed,problems_solved,target_role,python\n"
+    csv_text += "3,3,1,2,2,1,2,1,2,1,1.0,3,50,Data Analyst,3\n"
+    bad_csv = tmp_path / "dup_cols.csv"
+    bad_csv.write_text(csv_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="duplicate column names"):
+        load_raw_data(bad_csv)
+

@@ -125,18 +125,49 @@ def load_raw_data(data_path: Path) -> pd.DataFrame:
     if not data_path.exists():
         raise FileNotFoundError(f"Dataset not found at {data_path.resolve()}. Generate or provide dataset first.")
 
-    logger.info(f"Loading raw dataset from {data_path}...")
+    # Check for duplicate column names in CSV header
+    with open(data_path, "r", encoding="utf-8") as f:
+        header_cols = [c.strip() for c in f.readline().strip().split(",")]
+    if len(header_cols) != len(set(header_cols)):
+        raise ValueError(f"Dataset contains duplicate column names: {header_cols}")
+
     df = pd.read_csv(data_path)
 
     expected_cols = SKILL_COLUMNS + CONTEXT_COLUMNS + ["target_role"]
+
     missing_cols = set(expected_cols) - set(df.columns)
     if missing_cols:
         raise ValueError(f"Dataset is missing required columns: {missing_cols}")
 
-    # Validate skill ranges
+    unexpected_cols = set(df.columns) - set(expected_cols)
+    if unexpected_cols:
+        logger.warning(f"Dataset contains unexpected additional columns: {unexpected_cols}")
+
+    # Validate skill ranges and integer constraints
     for col in SKILL_COLUMNS:
-        if not df[col].between(1, 5).all():
+        vals = pd.to_numeric(df[col], errors="coerce")
+        if vals.isna().any() or not vals.between(1, 5).all():
             raise ValueError(f"Skill column {col} contains values outside expected range [1, 5]")
+        if not np.all(np.equal(vals, np.floor(vals))):
+            raise ValueError(f"Skill column {col} contains non-integer proficiency ratings")
+
+    # Validate contextual features constraints
+    if "years_experience" in df.columns:
+        exp = pd.to_numeric(df["years_experience"], errors="coerce")
+        if exp.isna().any() or (exp < 0).any():
+            raise ValueError("Context column 'years_experience' contains negative or non-numeric values")
+
+    for col in ["projects_completed", "problems_solved"]:
+        if col in df.columns:
+            c_vals = pd.to_numeric(df[col], errors="coerce")
+            if c_vals.isna().any() or (c_vals < 1).any() or not np.all(np.equal(c_vals, np.floor(c_vals))):
+                raise ValueError(f"Context column '{col}' must contain positive integer values (>= 1)")
+
+    # Validate target roles
+    if "target_role" in df.columns:
+        invalid_roles = set(df["target_role"].dropna().unique()) - set(ROLE_CLASSES)
+        if invalid_roles:
+            raise ValueError(f"target_role contains unsupported roles: {invalid_roles}")
 
     # Check missing values
     null_count = df.isnull().sum().sum()
@@ -144,6 +175,11 @@ def load_raw_data(data_path: Path) -> pd.DataFrame:
         logger.warning(f"Dataset contains {null_count} null values. Preprocessing will handle imputation.")
     else:
         logger.info("Dataset schema and value validation passed with zero null values.")
+
+    # Check duplicate rows
+    dup_count = df.duplicated().sum()
+    if dup_count > 0:
+        logger.warning(f"Dataset contains {dup_count} duplicate records.")
 
     logger.info(f"Loaded {len(df)} records across {len(df['target_role'].unique())} target roles.")
     return df
