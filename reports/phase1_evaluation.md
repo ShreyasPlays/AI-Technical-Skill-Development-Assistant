@@ -12,11 +12,11 @@ We evaluated two baseline non-linear classifiers (Decision Tree and Random Fores
 
 | Metric | Decision Tree Classifier | Random Forest Classifier | Delta (RF - DT) |
 | :--- | :---: | :---: | :---: |
-| **Accuracy** | 87.92% | **91.67%** | +3.75% |
-| **Precision (Macro)** | 0.8815 | **0.9180** | +0.0365 |
-| **Recall (Macro)** | 0.8792 | **0.9167** | +0.0375 |
-| **Macro F1-Score** | 0.8795 | **0.9168** | +0.0373 |
-| **Weighted F1-Score** | 0.8795 | **0.9168** | +0.0373 |
+| **Accuracy** | 84.00% | **100.00%** | +16.00% |
+| **Precision (Macro)** | 0.7772 | **1.0000** | +0.2228 |
+| **Recall (Macro)** | 0.8125 | **1.0000** | +0.1875 |
+| **Macro F1-Score** | 0.7879 | **1.0000** | +0.2121 |
+| **Weighted F1-Score** | 0.7914 | **1.0000** | +0.2086 |
 
 ### **Selected Production Model: Random Forest Classifier**
 
@@ -33,36 +33,69 @@ We evaluated two baseline non-linear classifiers (Decision Tree and Random Fores
 
 | Target Career Role | Precision | Recall | F1-Score | Support |
 | :--- | :---: | :---: | :---: | :---: |
-| **Data Analyst** | 0.9388 | 0.9583 | 0.9485 | 48 |
-| **Data Scientist** | 0.9111 | 0.8542 | 0.8817 | 48 |
-| **DevOps Engineer** | 0.9375 | 0.9375 | 0.9375 | 48 |
-| **Full Stack Developer** | 0.9565 | 0.9167 | 0.9362 | 48 |
-| **Machine Learning Engineer** | 0.8462 | 0.9167 | 0.8800 | 48 |
+| **AI ML Specialist** | 1.0000 | 1.0000 | 1.0000 | 211 |
+| **API Specialist** | 1.0000 | 1.0000 | 1.0000 | 91 |
+| **Application Support Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Business Analyst** | 1.0000 | 1.0000 | 1.0000 | 106 |
+| **Customer Service Executive** | 1.0000 | 1.0000 | 1.0000 | 91 |
+| **Cyber Security Specialist** | 1.0000 | 1.0000 | 1.0000 | 103 |
+| **Database Administrator** | 1.0000 | 1.0000 | 1.0000 | 99 |
+| **Graphics Designer** | 1.0000 | 1.0000 | 1.0000 | 98 |
+| **Hardware Engineer** | 1.0000 | 1.0000 | 1.0000 | 96 |
+| **Helpdesk Engineer** | 1.0000 | 1.0000 | 1.0000 | 93 |
+| **Information Security Specialist** | 1.0000 | 1.0000 | 1.0000 | 91 |
+| **Networking Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Project Manager** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Software Developer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Software tester** | 1.0000 | 1.0000 | 1.0000 | 99 |
+| **Technical Writer** | 1.0000 | 1.0000 | 1.0000 | 96 |
 
 ### Decision Tree Classifier (Baseline)
 
 | Target Career Role | Precision | Recall | F1-Score | Support |
 | :--- | :---: | :---: | :---: | :---: |
-| **Data Analyst** | 0.9167 | 0.9167 | 0.9167 | 48 |
-| **Data Scientist** | 0.7708 | 0.7708 | 0.7708 | 48 |
-| **DevOps Engineer** | 0.9038 | 0.9792 | 0.9400 | 48 |
-| **Full Stack Developer** | 1.0000 | 0.8958 | 0.9451 | 48 |
-| **Machine Learning Engineer** | 0.8163 | 0.8333 | 0.8247 | 48 |
+| **AI ML Specialist** | 0.4360 | 1.0000 | 0.6072 | 211 |
+| **API Specialist** | 0.0000 | 0.0000 | 0.0000 | 91 |
+| **Application Support Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Business Analyst** | 1.0000 | 1.0000 | 1.0000 | 106 |
+| **Customer Service Executive** | 0.0000 | 0.0000 | 0.0000 | 91 |
+| **Cyber Security Specialist** | 1.0000 | 1.0000 | 1.0000 | 103 |
+| **Database Administrator** | 1.0000 | 1.0000 | 1.0000 | 99 |
+| **Graphics Designer** | 1.0000 | 1.0000 | 1.0000 | 98 |
+| **Hardware Engineer** | 1.0000 | 1.0000 | 1.0000 | 96 |
+| **Helpdesk Engineer** | 1.0000 | 1.0000 | 1.0000 | 93 |
+| **Information Security Specialist** | 0.0000 | 0.0000 | 0.0000 | 91 |
+| **Networking Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Project Manager** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Software Developer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Software tester** | 1.0000 | 1.0000 | 1.0000 | 99 |
+| **Technical Writer** | 1.0000 | 1.0000 | 1.0000 | 96 |
 
 ---
 
 ## 3. Confusion Matrix (Random Forest Champion)
 
 Columns = Predicted Role | Rows = True Role  
-Order: **[0]** Data Analyst, **[1]** Data Scientist, **[2]** DevOps Engineer, **[3]** Full Stack Developer, **[4]** Machine Learning Engineer
+Order: **[0]** AI ML Specialist, **[1]** API Specialist, **[2]** Application Support Engineer, **[3]** Business Analyst, **[4]** Customer Service Executive, **[5]** Cyber Security Specialist, **[6]** Database Administrator, **[7]** Graphics Designer, **[8]** Hardware Engineer, **[9]** Helpdesk Engineer, **[10]** Information Security Specialist, **[11]** Networking Engineer, **[12]** Project Manager, **[13]** Software Developer, **[14]** Software tester, **[15]** Technical Writer
 
 | True Role \ Predicted | [0] | [1] | [2] | [3] | [4] |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **[0] Data Analyst** | 46 | 2 | 0 | 0 | 0 |
-| **[1] Data Scientist** | 0 | 41 | 0 | 0 | 7 |
-| **[2] DevOps Engineer** | 0 | 0 | 45 | 2 | 1 |
-| **[3] Full Stack Developer** | 1 | 0 | 3 | 44 | 0 |
-| **[4] Machine Learning Engineer** | 2 | 2 | 0 | 0 | 44 |
+| **[0] AI ML Specialist** | 211 | 0 | 0 | 0 | 0 |
+| **[1] API Specialist** | 0 | 91 | 0 | 0 | 0 |
+| **[2] Application Support Engineer** | 0 | 0 | 108 | 0 | 0 |
+| **[3] Business Analyst** | 0 | 0 | 0 | 106 | 0 |
+| **[4] Customer Service Executive** | 0 | 0 | 0 | 0 | 91 |
+| **[5] Cyber Security Specialist** | 0 | 0 | 0 | 0 | 0 |
+| **[6] Database Administrator** | 0 | 0 | 0 | 0 | 0 |
+| **[7] Graphics Designer** | 0 | 0 | 0 | 0 | 0 |
+| **[8] Hardware Engineer** | 0 | 0 | 0 | 0 | 0 |
+| **[9] Helpdesk Engineer** | 0 | 0 | 0 | 0 | 0 |
+| **[10] Information Security Specialist** | 0 | 0 | 0 | 0 | 0 |
+| **[11] Networking Engineer** | 0 | 0 | 0 | 0 | 0 |
+| **[12] Project Manager** | 0 | 0 | 0 | 0 | 0 |
+| **[13] Software Developer** | 0 | 0 | 0 | 0 | 0 |
+| **[14] Software tester** | 0 | 0 | 0 | 0 | 0 |
+| **[15] Technical Writer** | 0 | 0 | 0 | 0 | 0 |
 
 ---
 

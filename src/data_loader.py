@@ -1,6 +1,6 @@
 """
-Data loading and dataset generation module for Technical Skill Development Assistant.
-Ensures reproducible data acquisition and validation.
+Data loading and dataset ingestion module for Technical Skill Development Assistant.
+Handles Kaggle Career Mapping benchmark dataset ingestion, schema validation, and data verification.
 """
 
 from pathlib import Path
@@ -11,110 +11,119 @@ import pandas as pd
 
 from src.config import load_config
 
-# Standard 10 technical skills evaluated
+# Standard 17 technical skills evaluated from the Kaggle dataset (0-6 scale)
 SKILL_COLUMNS: List[str] = [
-    "python",
-    "sql",
-    "machine_learning",
-    "dsa",
-    "git",
-    "web_development",
-    "cloud_computing",
-    "system_design",
-    "statistics",
-    "deep_learning",
+    "database_fundamentals",
+    "computer_architecture",
+    "distributed_computing_systems",
+    "cyber_security",
+    "networking",
+    "software_development",
+    "programming_skills",
+    "project_management",
+    "computer_forensics_fundamentals",
+    "technical_communication",
+    "ai_ml",
+    "software_engineering",
+    "business_analysis",
+    "communication_skills",
+    "data_science",
+    "troubleshooting_skills",
+    "graphics_designing",
 ]
 
+# 10 psychometric / context indicators (0.0 - 1.0 scale)
 CONTEXT_COLUMNS: List[str] = [
-    "years_experience",
-    "projects_completed",
-    "problems_solved",
+    "openness",
+    "conscientiousness",
+    "extraversion",
+    "agreeableness",
+    "emotional_range",
+    "conversation",
+    "openness_to_change",
+    "hedonism",
+    "self_enhancement",
+    "self_transcendence",
 ]
 
+# 16 industry tech career role classes
 ROLE_CLASSES: List[str] = [
-    "Machine Learning Engineer",
-    "Data Scientist",
-    "Full Stack Developer",
-    "DevOps Engineer",
-    "Data Analyst",
+    "AI ML Specialist",
+    "Application Support Engineer",
+    "Networking Engineer",
+    "Software Developer",
+    "Project Manager",
+    "Business Analyst",
+    "Cyber Security Specialist",
+    "Database Administrator",
+    "Software tester",
+    "Graphics Designer",
+    "Hardware Engineer",
+    "Technical Writer",
+    "Helpdesk Engineer",
+    "Customer Service Executive",
+    "API Specialist",
+    "Information Security Specialist",
 ]
 
+KAGGLE_RAW_URL: str = (
+    "https://raw.githubusercontent.com/TuhinPatra633/Career-Prediction-Using-Machine-Learning/master/Data/CareerMapping.csv"
+)
 
-def generate_benchmark_dataset(
-    output_path: Path,
-    n_samples: int = 1200,
-    random_state: int = 42,
-) -> pd.DataFrame:
+
+def ingest_kaggle_dataset(output_path: Path, force_download: bool = False) -> pd.DataFrame:
     """
-    Generate a realistic, industry-aligned technical skill benchmark dataset.
-    Simulates students and junior developers targeting 5 prominent career paths.
-
-    Skill ratings are on a 1-5 integer proficiency scale:
-      1: Novice / Beginner
-      2: Advanced Beginner
-      3: Competent / Intermediate
-      4: Proficient
-      5: Expert
+    Ingest and curate the Kaggle Career Mapping dataset.
+    Downloads from repository if needed, cleans headers to snake_case, drops duplicates, and saves CSV.
     """
-    logger.info(f"Generating benchmark dataset with {n_samples} records (seed={random_state})...")
-    rng = np.random.default_rng(seed=random_state)
-
-    # Role archetypes with mean proficiency levels per skill (1-5 scale)
-    archetypes = {
-        "Machine Learning Engineer": {
-            "means": [4.0, 3.2, 4.2, 3.8, 3.5, 1.8, 3.4, 3.2, 3.9, 4.0],
-            "exp_mean": 1.8, "proj_mean": 5.5, "prob_mean": 240,
-        },
-        "Data Scientist": {
-            "means": [4.1, 4.0, 3.9, 3.0, 3.2, 1.6, 2.4, 2.2, 4.5, 3.1],
-            "exp_mean": 1.6, "proj_mean": 5.0, "prob_mean": 180,
-        },
-        "Full Stack Developer": {
-            "means": [3.2, 3.3, 1.6, 3.9, 4.0, 4.5, 3.2, 3.8, 2.0, 1.4],
-            "exp_mean": 1.7, "proj_mean": 6.2, "prob_mean": 220,
-        },
-        "DevOps Engineer": {
-            "means": [3.4, 2.5, 1.5, 3.1, 4.6, 2.3, 4.6, 3.9, 2.1, 1.3],
-            "exp_mean": 1.9, "proj_mean": 5.0, "prob_mean": 150,
-        },
-        "Data Analyst": {
-            "means": [3.1, 4.5, 2.2, 2.1, 2.8, 1.5, 2.2, 1.8, 4.1, 1.4],
-            "exp_mean": 1.4, "proj_mean": 4.2, "prob_mean": 110,
-        },
-    }
-
-    records = []
-    samples_per_role = n_samples // len(ROLE_CLASSES)
-    std_dev = 0.75  # realistic variability among students
-
-    for role_name in ROLE_CLASSES:
-        role_spec = archetypes[role_name]
-        means = np.array(role_spec["means"])
-
-        for _ in range(samples_per_role):
-            # Sample skills with noise and clip to [1, 5]
-            raw_skills = rng.normal(loc=means, scale=std_dev)
-            skills = np.clip(np.round(raw_skills), 1, 5).astype(int)
-
-            # Sample contextual features
-            years_exp = round(max(0.0, float(rng.normal(loc=role_spec["exp_mean"], scale=0.8))), 1)
-            projects = int(max(1, round(float(rng.normal(loc=role_spec["proj_mean"], scale=1.8)))))
-            problems = int(max(10, round(float(rng.normal(loc=role_spec["prob_mean"], scale=65)))))
-
-            row = {skill: int(skills[idx]) for idx, skill in enumerate(SKILL_COLUMNS)}
-            row["years_experience"] = years_exp
-            row["projects_completed"] = projects
-            row["problems_solved"] = problems
-            row["target_role"] = role_name
-            records.append(row)
-
-    df = pd.DataFrame(records)
-    # Shuffle dataframe
-    df = df.sample(frac=1.0, random_state=random_state).reset_index(drop=True)
-
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    if output_path.exists() and not force_download:
+        logger.info(f"Using existing raw dataset at {output_path}")
+        return pd.read_csv(output_path)
+
+    logger.info(f"Downloading Kaggle Career Mapping dataset from {KAGGLE_RAW_URL}...")
+    try:
+        raw_df = pd.read_csv(KAGGLE_RAW_URL)
+    except Exception as e:
+        logger.error(f"Failed to fetch from remote URL: {e}. Checking local fallback...")
+        if output_path.exists():
+            return pd.read_csv(output_path)
+        raise
+
+    col_map = {
+        "Database Fundamentals": "database_fundamentals",
+        "Computer Architecture": "computer_architecture",
+        "Distributed Computing Systems": "distributed_computing_systems",
+        "Cyber Security": "cyber_security",
+        "Networking": "networking",
+        "Software Development": "software_development",
+        "Programming Skills": "programming_skills",
+        "Project Management": "project_management",
+        "Computer Forensics Fundamentals": "computer_forensics_fundamentals",
+        "Technical Communication": "technical_communication",
+        "AI ML": "ai_ml",
+        "Software Engineering": "software_engineering",
+        "Business Analysis": "business_analysis",
+        "Communication skills": "communication_skills",
+        "Data Science": "data_science",
+        "Troubleshooting skills": "troubleshooting_skills",
+        "Graphics Designing": "graphics_designing",
+        "Openness": "openness",
+        "Conscientousness": "conscientiousness",
+        "Extraversion": "extraversion",
+        "Agreeableness": "agreeableness",
+        "Emotional_Range": "emotional_range",
+        "Conversation": "conversation",
+        "Openness to Change": "openness_to_change",
+        "Hedonism": "hedonism",
+        "Self-enhancement": "self_enhancement",
+        "Self-transcendence": "self_transcendence",
+        "Role": "target_role",
+    }
+    df = raw_df.rename(columns=col_map)
+    df = df.drop_duplicates().reset_index(drop=True)
     df.to_csv(output_path, index=False)
-    logger.success(f"Benchmark dataset successfully saved to: {output_path} (shape: {df.shape})")
+    logger.success(f"Ingested and saved {len(df)} records to {output_path}")
     return df
 
 
@@ -123,7 +132,7 @@ def load_raw_data(data_path: Path) -> pd.DataFrame:
     Load raw CSV dataset and validate schema, types, and value bounds.
     """
     if not data_path.exists():
-        raise FileNotFoundError(f"Dataset not found at {data_path.resolve()}. Generate or provide dataset first.")
+        raise FileNotFoundError(f"Dataset not found at {data_path.resolve()}. Ingest dataset first.")
 
     # Check for duplicate column names in CSV header
     with open(data_path, "r", encoding="utf-8") as f:
@@ -143,25 +152,19 @@ def load_raw_data(data_path: Path) -> pd.DataFrame:
     if unexpected_cols:
         logger.warning(f"Dataset contains unexpected additional columns: {unexpected_cols}")
 
-    # Validate skill ranges and integer constraints
+    # Validate skill ranges [0, 6] and integer constraints
     for col in SKILL_COLUMNS:
         vals = pd.to_numeric(df[col], errors="coerce")
-        if vals.isna().any() or not vals.between(1, 5).all():
-            raise ValueError(f"Skill column {col} contains values outside expected range [1, 5]")
+        if vals.isna().any() or not vals.between(0, 6).all():
+            raise ValueError(f"Skill column {col} contains values outside expected range [0, 6]")
         if not np.all(np.equal(vals, np.floor(vals))):
             raise ValueError(f"Skill column {col} contains non-integer proficiency ratings")
 
-    # Validate contextual features constraints
-    if "years_experience" in df.columns:
-        exp = pd.to_numeric(df["years_experience"], errors="coerce")
-        if exp.isna().any() or (exp < 0).any():
-            raise ValueError("Context column 'years_experience' contains negative or non-numeric values")
-
-    for col in ["projects_completed", "problems_solved"]:
-        if col in df.columns:
-            c_vals = pd.to_numeric(df[col], errors="coerce")
-            if c_vals.isna().any() or (c_vals < 1).any() or not np.all(np.equal(c_vals, np.floor(c_vals))):
-                raise ValueError(f"Context column '{col}' must contain positive integer values (>= 1)")
+    # Validate contextual/personality scores [0.0, 1.0]
+    for col in CONTEXT_COLUMNS:
+        p_vals = pd.to_numeric(df[col], errors="coerce")
+        if p_vals.isna().any() or not p_vals.between(0.0, 1.0).all():
+            raise ValueError(f"Context column {col} contains values outside expected range [0.0, 1.0]")
 
     # Validate target roles
     if "target_role" in df.columns:
@@ -169,17 +172,11 @@ def load_raw_data(data_path: Path) -> pd.DataFrame:
         if invalid_roles:
             raise ValueError(f"target_role contains unsupported roles: {invalid_roles}")
 
-    # Check missing values
     null_count = df.isnull().sum().sum()
     if null_count > 0:
-        logger.warning(f"Dataset contains {null_count} null values. Preprocessing will handle imputation.")
+        logger.warning(f"Dataset contains {null_count} null values.")
     else:
         logger.info("Dataset schema and value validation passed with zero null values.")
-
-    # Check duplicate rows
-    dup_count = df.duplicated().sum()
-    if dup_count > 0:
-        logger.warning(f"Dataset contains {dup_count} duplicate records.")
 
     logger.info(f"Loaded {len(df)} records across {len(df['target_role'].unique())} target roles.")
     return df
@@ -189,7 +186,7 @@ if __name__ == "__main__":
     cfg = load_config()
     raw_csv = cfg.paths.raw_data_path
     if not raw_csv.exists():
-        generate_benchmark_dataset(raw_csv, n_samples=1200, random_state=cfg.data.random_state)
+        ingest_kaggle_dataset(raw_csv)
     loaded_df = load_raw_data(raw_csv)
     print(loaded_df.head())
     print("\nRole distribution:")

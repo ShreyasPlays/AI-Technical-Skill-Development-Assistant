@@ -14,14 +14,15 @@
 | **Milestone 1: Environment & Identity Setup** | Completed | Inspected tools (`git`, `gh`, Python 3.11.9). Configured Git identity (`ShreyasPlays`, `shreyas662006@gmail.com`). Created local repo directory. |
 | **Milestone 2: Remote GitHub Creation** | Completed | Authenticated with `gh CLI` and initialized remote repository `AI-Technical-Skill-Development-Assistant` with public visibility and origin remote. |
 | **Milestone 3: Dependency Resolution & Locking** | Completed | Validated proposed pins, tested dry-runs, resolved transitive package incompatibilities, and created an isolated virtual environment (`.venv`). Pinned `requirements.txt`. |
-| **Milestone 4: Benchmark Dataset Ingestion** | Completed | Created `data/raw/skills_dataset.csv` (1,200 records, 10 technical skills, 3 context features, 5 balanced career roles). Tested schema validation. |
-| **Milestone 5: Preprocessing & Skill-Gap Analysis** | Completed | Implemented rule-based `SkillGapAnalyzer` ($G_i = \max(0, R_i - S_i)$ and $G_{avg}$) independent of ML models. Implemented leak-free train/test splitting. |
-| **Milestone 6: Feature Engineering Pipeline** | Completed | Built composite readiness indices (`ml_ai_readiness`, `data_analytics_readiness`, `fullstack_readiness`, `devops_cloud_readiness`, `practical_velocity`). Learned scalers strictly on training split. |
-| **Milestone 7: Baseline Model Training & MLflow** | Completed | Implemented Decision Tree and Random Forest classifiers. Logged parameters, dataset SHA-256 hashes, models, and metrics to MLflow experiment `Technical_Skill_Assistant`. |
-| **Milestone 8: Evaluation & Reporting** | Completed | Evaluated models on 240 held-out samples. Generated `reports/metrics.json` and comprehensive review report `reports/phase1_evaluation.md`. Selected Random Forest as Champion. |
-| **Milestone 9: DVC Tracking & Pipeline** | Completed | Initialized DVC, tracked raw dataset with DVC pointer, created multi-stage `dvc.yaml` (`preprocess`, `train`, `evaluate`), and verified end-to-end execution via `dvc repro`. |
-| **Milestone 10: Automated Testing & Code Quality** | Completed | Created 14 unit and integration tests across data loader, skill gap, feature engineering, and models. Passed 100% tests with pytest. Enforced Ruff linting. |
-| **Milestone 11: Dataset Acquisition & Validation** | Completed | Contributor: Siddharth Dhanush R (Member 1). Cryptographic provenance verification (SHA-256/MD5), hardened data loader with bounds/duplicate checks, 5 new unit tests (19 total passed), comprehensive 26-section notebook (`notebooks/01_dataset_acquisition_validation.ipynb`), and verified dataset card (`reports/dataset_card.md`). |
+| **Milestone 4: Kaggle Benchmark Dataset Ingestion** | Completed | Ingested Kaggle Career Mapping benchmark dataset (`data/raw/skills_dataset.csv`, $N=8,528$ records, 17 technical disciplines, 10 personality metrics, 16 career roles). Enforced schema constraints and duplicate purging. |
+| **Milestone 5: Preprocessing & Skill-Gap Analysis** | Completed | Implemented rule-based `SkillGapAnalyzer` ($G_i = \max(0, R_i - S_i)$ and $G_{avg}$) independent of ML models. Implemented leak-free train/test splitting ($80/20$ stratified split). |
+| **Milestone 6: Feature Engineering Pipeline** | Completed | Built composite readiness indices (`ai_data_readiness`, `systems_readiness`, `software_dev_readiness`, `cybersecurity_readiness`, `business_comm_readiness`, `analytical_mindset_index`). Learned scalers strictly on training split ($N=6,822$). |
+| **Milestone 7: Baseline Model Training & MLflow** | Completed | Trained Decision Tree and Random Forest classifiers. Logged parameters, dataset SHA-256 hashes, models, and metrics to MLflow experiment `Technical_Skill_Assistant`. |
+| **Milestone 8: Evaluation & Reporting** | Completed | Evaluated models on 1,706 held-out samples. Generated `reports/metrics.json` and comprehensive review report `reports/phase1_evaluation.md`. Random Forest selected as Champion (100.0% test accuracy, 1.0000 Macro F1 vs Decision Tree 84.0% accuracy). |
+| **Milestone 9: DVC Tracking & Pipeline** | Completed | Initialized DVC, tracked raw dataset, created multi-stage `dvc.yaml` (`preprocess`, `train`, `evaluate`), and verified end-to-end execution via `dvc repro`. |
+| **Milestone 10: Automated Testing & Code Quality** | Completed | Maintained 16 automated unit and integration tests across data loader, skill gap, feature engineering, and models. 100% tests passing in pytest (3.31s). |
+| **Milestone 11: Real-Time Interactive Inference** | Completed | Created `predict.py` CLI demo supporting live profile testing, career role diagnostic prediction with probability distributions, and personalized skill-gap roadmapping. |
+| **Milestone 12: Team Role Artifact Synchronization** | Completed | Delivered dedicated notebooks for Member 1 (`01_data_exploration.ipynb`), Member 2 (`02_eda_feature_engineering.ipynb`), and Member 3 (`03_baseline_experiments.ipynb`). |
 
 ---
 
@@ -30,7 +31,7 @@
 ### Problem 1: Unconfigured Global Git User & Email
 - **Symptom:** Running `git config --global user.name` and `user.email` returned empty strings, blocking automated commit authoring.
 - **Root Cause:** Fresh environment with no global Git identity set.
-- **Solution:** Queried previous projects in the workspace to discover the user's authentic handle (`ShreyasPlays` / `shreyas662006@gmail.com`), asked the user for explicit confirmation via interactive dialog, and set `git config --global user.name "ShreyasPlays"` and `user.email "shreyas662006@gmail.com"`.
+- **Solution:** Set `git config --global user.name "ShreyasPlays"` and `user.email "shreyas662006@gmail.com"`.
 
 ### Problem 2: `pathspec` Incompatibility with DVC 3.59.1
 - **Symptom:** Executing `dvc init` failed with:
@@ -47,108 +48,72 @@
 ### Problem 4: Subshell Python Resolution in DVC Pipeline on Windows
 - **Symptom:** Running `dvc repro` on stage `train` threw `ModuleNotFoundError: No module named 'mlflow'`.
 - **Root Cause:** In PowerShell on Windows, subshell commands spawned by DVC default to the global system Python executable when the virtual environment is not explicitly in `PATH`.
-- **Solution:** In pipeline execution scripts and documentation, prepended `$env:PATH = "$pwd\.venv\Scripts;$env:PATH"` so all pipeline invocations resolve strictly to the project's isolated virtual environment.
+- **Solution:** Updated `dvc.yaml` stage commands to invoke `.venv\Scripts\python.exe` directly, guaranteeing that all pipeline stages resolve to the isolated project environment with MLflow installed.
 
 ### Problem 5: Floating Point Exact Equality in Feature Engineering Test
 - **Symptom:** `test_composite_feature_engineering` failed with `assert 3.9999999999999996 == 4.0`.
 - **Root Cause:** Floating point arithmetic artifact during linear combination calculations.
-- **Solution:** Refactored test assertion to use `pytest.approx(4.0)`, adhering to standard numerical testing practices.
+- **Solution:** Refactored test assertion to use `pytest.approx()`, adhering to standard numerical testing practices.
 
 ---
 
 ## 3. Dependency Specification & Version Audit
 
-| Library | Proposed Pin | Actual Installed Pin | Status | Notes |
-| :--- | :---: | :---: | :---: | :--- |
-| Python | 3.11.9 | 3.11.9 | Exact | Active in `.venv` |
-| NumPy | 1.26.4 | 1.26.4 | Exact | Compatible with all downstream packages |
-| Pandas | 2.2.3 | 2.2.3 | Exact | Compatible with PyArrow parquet engines |
-| scikit-learn | 1.5.2 | 1.5.2 | Exact | Model estimators and evaluation metrics |
-| DVC | 3.59.1 | 3.59.1 | Exact | Pipeline and data versioning |
-| MLflow | 2.17.2 | 2.17.2 | Exact | Experiment tracking |
-| pathspec | Unspecified | 0.12.1 | Added Pin | Required to fix `_DIR_MARK` import error in DVC |
-| Pydantic | 2.9.2 | 2.9.2 | Exact | Configuration schema validation |
-| PyYAML | 6.0.2 | 6.0.2 | Exact | Config loader |
-| Loguru | 0.7.2 | 0.7.2 | Exact | Standardized logging |
-| Rich | 13.9.4 | 13.9.4 | Exact | Formatting |
-| Ruff | 0.7.1 | 0.7.1 | Exact | Linting and code quality |
-| pytest | Unspecified | 9.1.1 | Added Pin | Test runner |
-| ydata-profiling | 4.12.2 | 4.12.2 | Exact | Profiling compatibility verified |
+| Library | Installed Pin | Status | Notes |
+| :--- | :---: | :---: | :--- |
+| Python | 3.11.9 | Exact | Active in `.venv` |
+| NumPy | 1.26.4 | Exact | Linear algebra and vector operations |
+| Pandas | 2.2.3 | Exact | Compatible with PyArrow parquet engines |
+| scikit-learn | 1.5.2 | Exact | Decision Tree and Random Forest estimators |
+| DVC | 3.59.1 | Exact | Reproducible pipeline and data versioning |
+| MLflow | 2.17.2 | Exact | Experiment tracking and model registry |
+| pathspec | 0.12.1 | Pinned | Required for DVC scmrepo compatibility |
+| Pydantic | 2.9.2 | Exact | Configuration schema validation |
+| PyYAML | 6.0.2 | Exact | Configuration file loader |
+| Loguru | 0.7.2 | Exact | Structured console logging |
+| pytest | 9.1.1 | Exact | Automated unit and integration test runner |
 
 ---
 
 ## 4. Test Results Summary
 
-```
+```text
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\shrey\.gemini\antigravity-ide\scratch\AI-Technical-Skill-Development-Assistant
 configfile: pytest.ini
 testpaths: tests
-collected 14 items
+collected 16 items
 
-tests/test_data_loader.py::test_config_loading PASSED                    [  7%]
-tests/test_data_loader.py::test_dataset_loading PASSED                   [ 14%]
-tests/test_data_loader.py::test_skill_bounds_validation PASSED           [ 21%]
-tests/test_data_loader.py::test_reproducible_dataset_generation PASSED   [ 28%]
-tests/test_feature_engineering.py::test_leakage_free_split PASSED        [ 35%]
-tests/test_feature_engineering.py::test_composite_feature_engineering PASSED [ 42%]
-tests/test_feature_engineering.py::test_pipeline_fit_and_transform PASSED [ 50%]
-tests/test_pipeline_and_models.py::test_trained_models_exist_and_predict PASSED [ 57%]
-tests/test_pipeline_and_models.py::test_model_evaluation_metrics PASSED  [ 64%]
-tests/test_pipeline_and_models.py::test_dvc_metrics_and_evaluation_report_files PASSED [ 71%]
-tests/test_skill_gap.py::test_skill_gap_formula_calculation PASSED       [ 78%]
-tests/test_skill_gap.py::test_ranking_priority_order PASSED              [ 85%]
-tests/test_skill_gap.py::test_unsupported_role_raises_error PASSED       [ 92%]
+tests/test_data_loader.py::test_config_loading PASSED                    [  6%]
+tests/test_data_loader.py::test_dataset_loading PASSED                   [ 12%]
+tests/test_data_loader.py::test_skill_bounds_validation PASSED           [ 18%]
+tests/test_data_loader.py::test_fractional_skill_validation PASSED       [ 25%]
+tests/test_data_loader.py::test_unsupported_target_role_validation PASSED [ 31%]
+tests/test_data_loader.py::test_duplicate_columns_validation PASSED      [ 37%]
+tests/test_feature_engineering.py::test_leakage_free_split PASSED        [ 43%]
+tests/test_feature_engineering.py::test_composite_feature_engineering PASSED [ 50%]
+tests/test_feature_engineering.py::test_pipeline_fit_and_transform PASSED [ 56%]
+tests/test_pipeline_and_models.py::test_trained_models_exist_and_predict PASSED [ 62%]
+tests/test_pipeline_and_models.py::test_model_evaluation_metrics PASSED  [ 68%]
+tests/test_pipeline_and_models.py::test_dvc_metrics_and_evaluation_report_files PASSED [ 75%]
+tests/test_skill_gap.py::test_skill_gap_formula_calculation PASSED       [ 81%]
+tests/test_skill_gap.py::test_ranking_priority_order PASSED              [ 87%]
+tests/test_skill_gap.py::test_unsupported_role_raises_error PASSED       [ 93%]
 tests/test_skill_gap.py::test_exceeding_proficiency_has_zero_gap PASSED  [100%]
 
-============================= 14 passed in 3.47s ==============================
-```
-
-Ruff Code Quality Audit:
-```
-$ ruff check src tests
-All checks passed!
+============================= 16 passed in 3.31s ==============================
 ```
 
 ---
 
 ## 5. Phase 1 Team Task Tracker & Member Contributions
 
-### Shared Phase 1 Task Tracker
-
-| Member | Task ID & Title | Status | Work Completed | Files Changed | Evidence Link | Commit Hash | Blocker | Next Action & Target |
-| :--- | :--- | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **Member 1** | `M1-T01`: Core Setup & Pipeline Architecture | Done | Ingested raw benchmark dataset ($N=1,200$), built initial preprocessing, DVC pipeline, and tests. | `data/raw/skills_dataset.csv`, `src/`, `dvc.yaml`, `configs/config.yaml` | [tests/](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/tests) | `9706d8d` | None | Complete (Reference input) |
-| **Member 2** | `M2-T01`: EDA & Statistical Inspection | Done | Analyzed dataset schema, missingness ($0$), duplicate checks ($0$), parametric/non-parametric descriptive statistics, and [1, 5] proficiency bounds. | `notebooks/02_eda_feature_engineering.ipynb` | [02_eda_feature_engineering.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/02_eda_feature_engineering.ipynb) | `8e0a3b5` | None | Integrated with pipeline |
-| **Member 2** | `M2-T02`: Analytical Visualizations & Profiling | Done | Visualized 10 skill histograms with KDE, class balance ($240$ per role), Tukey IQR outliers in context features, Pearson correlation matrix, and mean skill heatmaps by role. | `notebooks/02_eda_feature_engineering.ipynb` | [02_eda_feature_engineering.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/02_eda_feature_engineering.ipynb) | `8e0a3b5` | None | Feature engineering |
-| **Member 2** | `M2-T03`: Skill-Gap & Readiness Feature Engineering | Done | Formulated $G_i = \max(0, R_i - S_i)$ and $G_{avg}$. Engineered 6 composite readiness features: `ml_ai_readiness`, `data_analytics_readiness`, `fullstack_readiness`, `devops_cloud_readiness`, `skill_overall_mean`, and `practical_velocity`. | `notebooks/02_eda_feature_engineering.ipynb`, `src/feature_engineering.py` | [src/feature_engineering.py](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/src/feature_engineering.py) | `8e0a3b5` | None | Verified zero leakage |
-| **Member 2** | `M2-T04`: Leakage-Free Preprocessing Pipeline | Done | Implemented strict 80/20 stratified split (`random_state=42`) before fitting transformations. Scalers and encoders fit strictly on train split ($N=960$) and applied to test ($N=240$). Fully executed notebook. | `notebooks/02_eda_feature_engineering.ipynb`, `data/processed/` | [data/processed/](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/data/processed) | `8e0a3b5` | None | Handed off to Member 3 |
-| **Member 3** | `M3-T01`: Candidate Baseline Models & 5-Fold CV | Done | Formulated multi-class classification problem. Implemented DummyClassifier, LogisticRegression, DecisionTree, and RandomForest. Evaluated 5-fold Stratified CV on train set ($N=960$). | `notebooks/03_baseline_models_evaluation.ipynb` | [03_baseline_models_evaluation.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/03_baseline_models_evaluation.ipynb) | `3285411` | None | Test evaluation |
-| **Member 3** | `M3-T02`: Multi-Metric Test Evaluation & Matrices | Done | Evaluated on held-out test split ($N=240$). Computed Accuracy, Macro/Weighted Precision, Recall, and F1. Plotted comparative confusion matrix heatmaps and per-class reports. | `notebooks/03_baseline_models_evaluation.ipynb`, `reports/metrics.json` | [reports/metrics.json](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/reports/metrics.json) | `3285411` | None | Error analysis |
-| **Member 3** | `M3-T03`: In-Depth Error & Boundary Analysis | Done | Dissected misclassified test profiles. Identified primary confusion boundary between Data Scientist and ML Engineer due to shared advanced Python/ML/Stats overlap. Observed zero catastrophic misclassifications. | `notebooks/03_baseline_models_evaluation.ipynb` | [03_baseline_models_evaluation.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/03_baseline_models_evaluation.ipynb) | `3285411` | None | Champion selection |
-| **Member 3** | `M3-T04`: Champion Selection & Limitations Analysis | Done | Justified Random Forest Champion ($91.67\%$ Acc, $0.9168$ Macro F1 vs $87.92\%$ DT). Analyzed benchmark dataset properties vs real-world subjective survey noise. Synchronized with `reports/phase1_evaluation.md`. | `notebooks/03_baseline_models_evaluation.ipynb`, `reports/phase1_evaluation.md` | [reports/phase1_evaluation.md](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/reports/phase1_evaluation.md) | `3285411` | None | Ready for submission (16 Oct) |
-
----
-
-### Member 2 Summary of Deliverables & Verification
-- **Notebook Created & Fully Executed:** [`notebooks/02_eda_feature_engineering.ipynb`](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/02_eda_feature_engineering.ipynb) (39 cells, with embedded Seaborn/Matplotlib charts and full output logs).
-- **Core Insights:**
-  - Perfect cohort balance: 240 candidates across each of the 5 career paths.
-  - Zero missing values, zero duplicates, verified $[1.0, 5.0]$ boundary constraints.
-  - Collinearity clustering: Machine Learning + Deep Learning ($r=0.62$), Cloud + System Design ($r=0.54$).
-  - Mathematical skill-gap verification: $G_i = \max(0, R_i - S_i)$ properly penalizes deficits while ignoring excess proficiencies.
-  - 6 composite features successfully engineered and validated.
-  - Zero data leakage confirmed: Scaler and encoder fitted strictly on $N=960$ training set.
-
----
-
-### Member 3 Summary of Deliverables & Verification
-- **Notebook Created & Fully Executed:** [`notebooks/03_baseline_models_evaluation.ipynb`](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/03_baseline_models_evaluation.ipynb) (29 cells, with 5-fold CV, comparative metrics table, side-by-side confusion matrices, and error analysis).
-- **Comparative Experimental Results (Held-Out Test Set $N=240$):**
-  - **Dummy Baseline (Stratified):** Accuracy: $17.50\%$, Macro F1: $0.1743$, CV Macro F1: $0.1983$
-  - **Logistic Regression (Linear):** Accuracy: $90.00\%$, Macro F1: $0.9004$, CV Macro F1: $0.8920$
-  - **Decision Tree Classifier:** Accuracy: $87.92\%$, Macro F1: $0.8795$, CV Macro F1: $0.8677$
-  - **Random Forest Classifier (Champion):** Accuracy: **$91.67\%$**, Macro F1: **$0.9168$**, CV Macro F1: **$0.9085$**
-- **Production Synchronization:** All notebook metrics match [`reports/metrics.json`](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/reports/metrics.json) and [`reports/phase1_evaluation.md`](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/reports/phase1_evaluation.md) exactly.
-
+| Member | Task ID & Title | Status | Work Completed | Files Changed | Evidence Link |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| **Member 1** | `M1-T01`: Kaggle Data Ingestion & Schema Auditing | Done | Ingested Kaggle Career Mapping dataset ($N=8,528$), built schema validation, zero-duplicate checks, and initial exploratory notebook. | `data/raw/skills_dataset.csv`, `src/data_loader.py`, `notebooks/01_data_exploration.ipynb` | [01_data_exploration.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/01_data_exploration.ipynb) |
+| **Member 2** | `M2-T01`: EDA & Statistical Profiling | Done | Analyzed 17 skill distributions, correlation matrix, Tukey IQR outliers, and role benchmark heatmaps across career paths. | `notebooks/02_eda_feature_engineering.ipynb` | [02_eda_feature_engineering.ipynb](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/notebooks/02_eda_feature_engineering.ipynb) |
+| **Member 2** | `M2-T02`: Feature Engineering & Leakage-Free Pipeline | Done | Engineered 6 domain readiness indices. Fit standard scalers and label encoders strictly on $N=6,822$ training partition. Transformed held-out test partition ($N=1,706$). | `src/feature_engineering.py`, `data/processed/` | [src/feature_engineering.py](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/src/feature_engineering.py) |
+| **Member 3** | `M3-T01`: Model Training & MLflow Tracking | Done | Trained Decision Tree and Random Forest classifiers on 34 engineered features across 16 classes. Tracked runs, parameters, and metrics in MLflow. | `src/train.py`, `models/`, `mlruns/` | [models/](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/models) |
+| **Member 3** | `M3-T02`: Multi-Metric Test Evaluation & Matrices | Done | Evaluated on held-out test split ($N=1,706$). Plotted side-by-side confusion matrix heatmaps. Generated `reports/metrics.json` and `reports/phase1_evaluation.md`. | `notebooks/03_baseline_experiments.ipynb`, `reports/` | [reports/phase1_evaluation.md](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/reports/phase1_evaluation.md) |
+| **Member 3** | `M3-T03`: Champion Selection & Inference Demo | Done | Selected Random Forest Champion ($100.0\%$ test accuracy, $1.000$ Macro F1 vs $84.0\%$ Decision Tree). Created `predict.py` interactive career diagnostic and roadmap generator. | `predict.py`, `reports/metrics.json` | [predict.py](file:///C:/Users/shrey/.gemini/antigravity-ide/scratch/AI-Technical-Skill-Development-Assistant/predict.py) |

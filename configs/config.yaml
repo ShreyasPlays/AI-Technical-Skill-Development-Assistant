@@ -17,90 +17,132 @@ data:
   stratify: true
   target_column: "target_role"
   skill_features:
-    - "python"
-    - "sql"
-    - "machine_learning"
-    - "dsa"
-    - "git"
-    - "web_development"
-    - "cloud_computing"
-    - "system_design"
-    - "statistics"
-    - "deep_learning"
+    - "database_fundamentals"
+    - "computer_architecture"
+    - "distributed_computing_systems"
+    - "cyber_security"
+    - "networking"
+    - "software_development"
+    - "programming_skills"
+    - "project_management"
+    - "computer_forensics_fundamentals"
+    - "technical_communication"
+    - "ai_ml"
+    - "software_engineering"
+    - "business_analysis"
+    - "communication_skills"
+    - "data_science"
+    - "troubleshooting_skills"
+    - "graphics_designing"
   context_features:
-    - "years_experience"
-    - "projects_completed"
-    - "problems_solved"
+    - "openness"
+    - "conscientiousness"
+    - "extraversion"
+    - "agreeableness"
+    - "emotional_range"
+    - "conversation"
+    - "openness_to_change"
+    - "hedonism"
+    - "self_enhancement"
+    - "self_transcendence"
 
 roles:
-  Machine Learning Engineer:
-    python: 4
-    sql: 3
-    machine_learning: 4
-    dsa: 4
-    git: 3
-    web_development: 1
-    cloud_computing: 3
-    system_design: 3
-    statistics: 4
-    deep_learning: 4
-  Data Scientist:
-    python: 4
-    sql: 4
-    machine_learning: 4
-    dsa: 3
-    git: 3
-    web_development: 1
-    cloud_computing: 2
-    system_design: 2
-    statistics: 5
-    deep_learning: 3
-  Full Stack Developer:
-    python: 3
-    sql: 3
-    machine_learning: 1
-    dsa: 4
-    git: 4
-    web_development: 5
-    cloud_computing: 3
-    system_design: 4
-    statistics: 2
-    deep_learning: 1
-  DevOps Engineer:
-    python: 3
-    sql: 2
-    machine_learning: 1
-    dsa: 3
-    git: 5
-    web_development: 2
-    cloud_computing: 5
-    system_design: 4
-    statistics: 2
-    deep_learning: 1
-  Data Analyst:
-    python: 3
-    sql: 5
-    machine_learning: 2
-    dsa: 2
-    git: 2
-    web_development: 1
-    cloud_computing: 2
-    system_design: 1
-    statistics: 4
-    deep_learning: 1
+  AI ML Specialist:
+    ai_ml: 5
+    data_science: 5
+    programming_skills: 4
+    database_fundamentals: 3
+    distributed_computing_systems: 3
+    software_engineering: 3
+  Database Administrator:
+    database_fundamentals: 6
+    distributed_computing_systems: 4
+    troubleshooting_skills: 4
+    programming_skills: 3
+    networking: 3
+  Software Developer:
+    software_development: 6
+    programming_skills: 5
+    software_engineering: 5
+    database_fundamentals: 3
+    troubleshooting_skills: 3
+  Cyber Security Specialist:
+    cyber_security: 6
+    networking: 5
+    computer_forensics_fundamentals: 4
+    troubleshooting_skills: 4
+    programming_skills: 3
+  Networking Engineer:
+    networking: 6
+    cyber_security: 4
+    troubleshooting_skills: 4
+    distributed_computing_systems: 4
+    computer_architecture: 3
+  Hardware Engineer:
+    computer_architecture: 6
+    troubleshooting_skills: 4
+    networking: 3
+    software_engineering: 3
+  Project Manager:
+    project_management: 6
+    business_analysis: 5
+    technical_communication: 5
+    communication_skills: 5
+  Business Analyst:
+    business_analysis: 6
+    project_management: 4
+    technical_communication: 5
+    communication_skills: 5
+  Application Support Engineer:
+    distributed_computing_systems: 6
+    troubleshooting_skills: 5
+    software_development: 4
+    database_fundamentals: 3
+  Software tester:
+    software_engineering: 6
+    troubleshooting_skills: 5
+    programming_skills: 4
+    software_development: 3
+  Graphics Designer:
+    graphics_designing: 6
+    communication_skills: 4
+    technical_communication: 3
+  Technical Writer:
+    technical_communication: 6
+    communication_skills: 5
+    software_engineering: 3
+  Helpdesk Engineer:
+    troubleshooting_skills: 6
+    communication_skills: 5
+    networking: 4
+    computer_architecture: 3
+  Information Security Specialist:
+    computer_forensics_fundamentals: 6
+    cyber_security: 5
+    networking: 4
+    troubleshooting_skills: 3
+  API Specialist:
+    programming_skills: 6
+    software_development: 5
+    distributed_computing_systems: 4
+    software_engineering: 4
+  Customer Service Executive:
+    communication_skills: 6
+    technical_communication: 4
+    troubleshooting_skills: 3
 
 models:
   random_state: 42
   decision_tree:
-    max_depth: 6
-    min_samples_split: 10
-    min_samples_leaf: 5
+    max_depth: 12
+    min_samples_split: 5
+    min_samples_leaf: 2
     criterion: "gini"
   random_forest:
     n_estimators: 100
-    max_depth: 8
-    min_samples_split: 8
-    min_samples_leaf: 4
+    max_depth: 14
+    min_samples_split: 4
+    min_samples_leaf: 2
     criterion: "gini"
     n_jobs: -1
 

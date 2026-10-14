@@ -1,6 +1,6 @@
 stages:
   preprocess:
-    cmd: python -m src.feature_engineering
+    cmd: .venv\Scripts\python.exe -m src.feature_engineering
     deps:
       - data/raw/skills_dataset.csv
       - src/data_loader.py
@@ -13,7 +13,7 @@ stages:
       - data/processed/feature_metadata.json
 
   train:
-    cmd: python -m src.train
+    cmd: .venv\Scripts\python.exe -m src.train
     deps:
       - data/processed/train.parquet
       - src/train.py
@@ -24,7 +24,7 @@ stages:
       - models/training_summary.json
 
   evaluate:
-    cmd: python -m src.evaluate
+    cmd: .venv\Scripts\python.exe -m src.evaluate
     deps:
       - data/processed/test.parquet
       - data/processed/feature_metadata.json

@@ -23,39 +23,65 @@ def engineer_composite_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     # 1. Overall mean skill proficiency across all evaluated disciplines
-    df["skill_overall_mean"] = df[SKILL_COLUMNS].mean(axis=1)
+    available_skills = [c for c in SKILL_COLUMNS if c in df.columns]
+    if available_skills:
+        df["technical_overall_mean"] = df[available_skills].mean(axis=1)
 
-    # 2. Domain readiness indices based on target career competencies
-    df["ml_ai_readiness"] = (
-        0.35 * df["python"]
-        + 0.35 * df["machine_learning"]
-        + 0.20 * df["deep_learning"]
-        + 0.10 * df["statistics"]
-    )
+    # 2. Domain readiness composite indices
+    if "ai_ml" in df.columns and "data_science" in df.columns and "programming_skills" in df.columns:
+        df["ai_data_readiness"] = (
+            0.45 * df["ai_ml"]
+            + 0.45 * df["data_science"]
+            + 0.10 * df["programming_skills"]
+        )
 
-    df["data_analytics_readiness"] = (
-        0.40 * df["sql"]
-        + 0.30 * df["statistics"]
-        + 0.20 * df["python"]
-        + 0.10 * df["machine_learning"]
-    )
+    if (
+        "networking" in df.columns
+        and "distributed_computing_systems" in df.columns
+        and "computer_architecture" in df.columns
+    ):
+        df["systems_readiness"] = (
+            0.35 * df["networking"]
+            + 0.35 * df["distributed_computing_systems"]
+            + 0.30 * df["computer_architecture"]
+        )
 
-    df["fullstack_readiness"] = (
-        0.40 * df["web_development"]
-        + 0.25 * df["dsa"]
-        + 0.20 * df["git"]
-        + 0.15 * df["system_design"]
-    )
+    if (
+        "software_development" in df.columns
+        and "programming_skills" in df.columns
+        and "software_engineering" in df.columns
+    ):
+        df["software_dev_readiness"] = (
+            0.40 * df["software_development"]
+            + 0.35 * df["programming_skills"]
+            + 0.25 * df["software_engineering"]
+        )
 
-    df["devops_cloud_readiness"] = (
-        0.40 * df["cloud_computing"]
-        + 0.30 * df["git"]
-        + 0.20 * df["system_design"]
-        + 0.10 * df["python"]
-    )
+    if (
+        "cyber_security" in df.columns
+        and "computer_forensics_fundamentals" in df.columns
+        and "networking" in df.columns
+    ):
+        df["cybersecurity_readiness"] = (
+            0.50 * df["cyber_security"]
+            + 0.30 * df["computer_forensics_fundamentals"]
+            + 0.20 * df["networking"]
+        )
 
-    # 3. Practical velocity and project engagement index
-    df["practical_velocity"] = np.log1p(df["problems_solved"]) * np.sqrt(df["projects_completed"])
+    if (
+        "business_analysis" in df.columns
+        and "project_management" in df.columns
+        and "communication_skills" in df.columns
+    ):
+        df["business_comm_readiness"] = (
+            0.40 * df["business_analysis"]
+            + 0.35 * df["project_management"]
+            + 0.25 * df["communication_skills"]
+        )
+
+    # 3. Psychometric Analytical Index
+    if "conscientiousness" in df.columns and "openness" in df.columns:
+        df["analytical_mindset_index"] = (df["conscientiousness"] + df["openness"]) / 2.0
 
     return df
 

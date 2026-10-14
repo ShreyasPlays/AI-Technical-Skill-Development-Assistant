@@ -29,8 +29,8 @@ def test_trained_models_exist_and_predict():
 
     assert len(dt_preds) == len(X_test)
     assert len(rf_preds) == len(X_test)
-    assert set(dt_preds).issubset({0, 1, 2, 3, 4})
-    assert set(rf_preds).issubset({0, 1, 2, 3, 4})
+    assert set(dt_preds).issubset(set(range(16)))
+    assert set(rf_preds).issubset(set(range(16)))
 
 
 def test_model_evaluation_metrics():
@@ -52,7 +52,7 @@ def test_model_evaluation_metrics():
 
     assert metrics["accuracy"] > 0.80, "Random Forest baseline should exceed 80% accuracy"
     assert metrics["f1_macro"] > 0.80, "Random Forest macro F1 should exceed 0.80"
-    assert len(metrics["confusion_matrix"]) == 5
+    assert len(metrics["confusion_matrix"]) == 16
 
 
 def test_dvc_metrics_and_evaluation_report_files():

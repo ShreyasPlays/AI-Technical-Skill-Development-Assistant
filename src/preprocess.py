@@ -11,7 +11,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from src.config import AppConfig, load_config
-from src.data_loader import load_raw_data, generate_benchmark_dataset
+from src.data_loader import load_raw_data, ingest_kaggle_dataset
 
 
 class SkillGapAnalyzer:
@@ -39,7 +39,7 @@ class SkillGapAnalyzer:
         Analyze skill gaps for a given student profile and target role.
 
         Args:
-            student_skills: Dict mapping skill names to proficiency (1-5).
+            student_skills: Dict mapping skill names to proficiency (0-6).
             target_role: Target career role name.
 
         Returns:
@@ -56,15 +56,15 @@ class SkillGapAnalyzer:
         num_skills = len(requirements)
 
         for skill, required_prof in requirements.items():
-            current_prof = int(student_skills.get(skill, 1))
+            current_prof = int(student_skills.get(skill, 0))
             # G_i = max(0, R_i - S_i)
             gap = max(0, required_prof - current_prof)
             total_gap += gap
 
             status = "Proficient"
-            if gap >= 2:
+            if gap >= 3:
                 status = "Critical Gap"
-            elif gap == 1:
+            elif gap >= 1:
                 status = "Minor Gap"
 
             gap_details.append({
@@ -79,10 +79,11 @@ class SkillGapAnalyzer:
         gap_details.sort(key=lambda x: (x["gap"], x["required_proficiency"]), reverse=True)
 
         g_avg = round(total_gap / num_skills, 2)
-        readiness_score = round(max(0.0, 100.0 * (1.0 - (total_gap / (num_skills * 4.0)))), 1)
+        # Scale max proficiency is 6
+        readiness_score = round(max(0.0, 100.0 * (1.0 - (total_gap / (num_skills * 6.0)))), 1)
 
         recommendations = [
-            f"Focus on '{item['skill']}' (Current: {item['current_proficiency']}/5, Required: {item['required_proficiency']}/5, Gap: +{item['gap']})"
+            f"Focus on '{item['skill']}' (Current: {item['current_proficiency']}/6, Required: {item['required_proficiency']}/6, Gap: +{item['gap']})"
             for item in gap_details if item["gap"] > 0
         ]
 
@@ -126,12 +127,8 @@ def run_preprocessing_pipeline(config: Optional[AppConfig] = None) -> Tuple[pd.D
 
     raw_path = config.paths.raw_data_path
     if not raw_path.exists():
-        logger.info(f"Raw data file not found at {raw_path}. Generating benchmark dataset...")
-        generate_benchmark_dataset(
-            output_path=raw_path,
-            n_samples=1200,
-            random_state=config.data.random_state,
-        )
+        logger.info(f"Raw data file not found at {raw_path}. Ingesting Kaggle dataset...")
+        ingest_kaggle_dataset(output_path=raw_path)
 
     df = load_raw_data(raw_path)
     train_df, test_df = split_data_leak_free(
@@ -160,18 +157,14 @@ if __name__ == "__main__":
     # Demonstration of the rule-based SkillGapAnalyzer on example student profile
     analyzer = SkillGapAnalyzer(cfg.roles)
     example_student = {
-        "python": 2,
-        "sql": 3,
-        "machine_learning": 1,
-        "dsa": 4,
-        "git": 2,
-        "web_development": 1,
-        "cloud_computing": 1,
-        "system_design": 2,
-        "statistics": 2,
-        "deep_learning": 1,
+        "ai_ml": 2,
+        "data_science": 1,
+        "programming_skills": 3,
+        "database_fundamentals": 2,
+        "distributed_computing_systems": 1,
+        "software_engineering": 2,
     }
-    result = analyzer.analyze_gap(example_student, target_role="Machine Learning Engineer")
+    result = analyzer.analyze_gap(example_student, target_role="AI ML Specialist")
     print(f"\n--- Skill Gap Analysis for Target Role: {result['target_role']} ---")
     print(f"Average Skill Gap G_avg: {result['average_skill_gap']}")
     print(f"Readiness Score: {result['readiness_percentage']}%")
