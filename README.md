@@ -25,34 +25,34 @@ This project provides:
 
 ```mermaid
 flowchart TD
-    subgraph Data Layer
-        A[data/raw/skills_dataset.csv] -->|DVC Tracking| B[data/raw/skills_dataset.csv.dvc]
+    subgraph DataLayer ["Data Layer"]
+        A["data/raw/skills_dataset.csv"] -->|DVC Tracking| B["data/raw/skills_dataset.csv.dvc"]
     end
 
-    subgraph Pipeline Orchestration [DVC Pipeline: dvc repro]
-        A -->|Stage 1: Preprocess| C[src/preprocess.py & src/feature_engineering.py]
-        C --> D[data/processed/train.parquet]
-        C --> E[data/processed/test.parquet]
-        C --> F[data/processed/feature_metadata.json]
+    subgraph PipelineOrchestration ["DVC Pipeline: dvc repro"]
+        A -->|Stage 1: Preprocess| C["src/preprocess.py & src/feature_engineering.py"]
+        C --> D["data/processed/train.parquet"]
+        C --> E["data/processed/test.parquet"]
+        C --> F["data/processed/feature_metadata.json"]
         
-        D -->|Stage 2: Train| G[src/train.py]
-        G --> H[models/decision_tree.joblib]
-        G --> I[models/random_forest.joblib]
-        G --> J[(MLflow Tracking: Technical_Skill_Assistant)]
+        D -->|Stage 2: Train| G["src/train.py"]
+        G --> H["models/decision_tree.joblib"]
+        G --> I["models/random_forest.joblib"]
+        G --> J[("MLflow Tracking: Technical_Skill_Assistant")]
         
-        E -->|Stage 3: Evaluate| K[src/evaluate.py]
+        E -->|Stage 3: Evaluate| K["src/evaluate.py"]
         F --> K
         H --> K
         I --> K
-        K --> L[reports/metrics.json]
-        K --> M[reports/phase1_evaluation.md]
+        K --> L["reports/metrics.json"]
+        K --> M["reports/phase1_evaluation.md"]
         K --> J
     end
 
-    subgraph Rule-Based Inference
-        N[Student Input Profile] --> O[SkillGapAnalyzer]
-        O --> P[Skill Gap Metric G_i = max(0, R_i - S_i)]
-        P --> Q[Prioritized Improvement Recommendations]
+    subgraph RuleBasedInference ["Rule-Based Inference"]
+        N["Student Input Profile"] --> O["SkillGapAnalyzer"]
+        O --> P["Skill Gap Metric G_i = max(0, R_i - S_i)"]
+        P --> Q["Prioritized Improvement Recommendations"]
     end
 ```
 
