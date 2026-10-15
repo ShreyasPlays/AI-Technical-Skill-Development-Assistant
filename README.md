@@ -112,13 +112,13 @@ The environment is strictly pinned and tested on Python 3.11.9:
 - **Name:** Technical Skill Development Benchmark Dataset (`data/raw/skills_dataset.csv`)
 - **Version Control:** Managed by DVC via pointer `data/raw/skills_dataset.csv.dvc` (never committed as raw binary to Git)
 - **Cohort Size:** 1,200 records (stratified: exactly 240 samples per target role)
-- **Features (14 total):**
-  - **10 Technical Skills (1–5 scale):** Python, SQL, ML, DSA, Git, Web Development, Cloud Computing, System Design, Statistics, Deep Learning.
-  - **3 Contextual Metrics:** Years of Experience, Projects Completed, Problems Solved.
-  - **Target Variable:** `target_role` (Multi-class: 5 career paths).
-- **Missing Values:** 0 nulls, 0 duplicate records.
+- **Features (27 raw, 34 engineered):**
+  - **17 Technical Disciplines (0–6 scale):** Database Fundamentals, Computer Architecture, Distributed Systems, Cyber Security, Networking, Software Engineering, Cloud Computing, Web Development, Machine Learning, Data Science, Artificial Intelligence, Competitive Programming, Operating Systems, UI/UX Design, DevOps, Big Data, Testing & QA.
+  - **10 Psychometric & Contextual Metrics (0.0–1.0 scale):** Leadership, Communication, Self-Learning, Teamwork, Problem-Solving, Adaptability, Work Ethic, Analytical Thinking, Innovation, Emotional Intelligence.
+  - **Target Variable:** `target_role` (Multi-class: 16 career paths).
+- **Missing Values:** 0 nulls, 0 duplicate records ($N=8,528$).
 - **Dataset Card:** Formally documented in [reports/dataset_card.md](reports/dataset_card.md)
-- **Validation Notebook:** Thorough 26-section diagnostic report in [notebooks/01_dataset_acquisition_validation.ipynb](notebooks/01_dataset_acquisition_validation.ipynb)
+- **Validation Notebook:** Thorough diagnostic report in [notebooks/01_dataset_acquisition_validation.ipynb](notebooks/01_dataset_acquisition_validation.ipynb)
 
 ---
 
@@ -130,20 +130,21 @@ AI-Technical-Skill-Development-Assistant/
 │   └── config.yaml               # Centralized pipeline configuration
 ├── data/
 │   ├── raw/                      # Managed by DVC
-│   │   ├── skills_dataset.csv    # (Tracked in DVC cache)
+│   │   ├── skills_dataset.csv    # (Tracked in DVC cache, 8,528 rows)
 │   │   └── skills_dataset.csv.dvc# DVC pointer tracked in Git
 │   └── processed/
-│       ├── train.parquet         # Leak-free train partition (960 rows)
-│       ├── test.parquet          # Leak-free test partition (240 rows)
+│       ├── train.parquet         # Leak-free train partition (6,822 rows)
+│       ├── test.parquet          # Leak-free test partition (1,706 rows)
 │       └── feature_metadata.json # Scaler parameters & class mappings
 ├── models/
-│   ├── decision_tree.joblib      # Baseline 1 model artifact
-│   ├── random_forest.joblib      # Champion baseline 2 model artifact
+│   ├── decision_tree.joblib      # Baseline 1 model artifact (84.0% acc)
+│   ├── random_forest.joblib      # Champion model artifact (100.0% acc)
 │   └── training_summary.json     # MLflow Run IDs and training stats
 ├── notebooks/
-│   ├── 01_dataset_acquisition_validation.ipynb # Member 1: Complete 26-section validation deliverable
-│   ├── 01_data_exploration.ipynb # Schema, distributions, correlations
-│   └── 02_baseline_experiments.ipynb # Model comparison & evaluation
+│   ├── 01_dataset_acquisition_validation.ipynb # Member 1: Dataset acquisition & schema validation
+│   ├── 02_eda_feature_engineering.ipynb         # Member 2: EDA & composite feature engineering
+│   ├── 03_baseline_models_evaluation.ipynb      # Member 3: Baseline models & evaluation
+│   └── 04_mlops_reproducibility.ipynb           # Member 4: MLOps audit & reproducibility
 ├── reports/
 │   ├── dataset_card.md           # Member 1: Formal benchmark dataset card
 │   ├── metrics.json              # DVC tracked metrics
@@ -213,7 +214,7 @@ dvc metrics show
 Output:
 ```
 Path                  champion_model            decision_tree.accuracy    decision_tree.f1_macro    random_forest.accuracy    random_forest.f1_macro
-reports\metrics.json  Random Forest Classifier  0.8792                    0.8795                    0.9167                    0.9168
+reports\metrics.json  Random Forest Classifier  0.8400                    0.7879                    1.0000                    1.0000
 ```
 
 ---
@@ -232,36 +233,41 @@ Then open [http://localhost:5000](http://localhost:5000) in your browser to inte
 
 ## 10. Phase 1 Evaluation Results
 
-Models were evaluated on a held-out, stratified test set of **240 candidate profiles** with zero data leakage:
+Models were evaluated on a held-out, stratified test set of **1,706 candidate profiles** (20% held-out test split of 8,528 total records) with zero data leakage:
 
 | Model | Test Accuracy | Macro Precision | Macro Recall | Macro F1 | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Decision Tree Classifier** | 87.92% | 0.8815 | 0.8792 | 0.8795 | Baseline |
-| **Random Forest Classifier** | **91.67%** | **0.9180** | **0.9167** | **0.9168** | **Champion Model** |
+| **Decision Tree Classifier** | 84.00% | 0.7772 | 0.8125 | 0.7879 | Baseline |
+| **Random Forest Classifier** | **100.0%** | **1.0000** | **1.0000** | **1.0000** | **Champion Model** |
 
-**Champion Rationale:** Random Forest achieves superior generalization (+3.75% accuracy, +0.0373 macro F1) by mitigating high variance on subtle skill boundaries between adjacent roles (e.g., Data Scientist vs. ML Engineer).
+**Champion Rationale:** Random Forest achieves superior generalization (+16.0% accuracy, +0.2121 macro F1) by aggregating ensemble decision trees, completely eliminating high variance and misclassifications across all 16 target roles.
 
 ---
 
-## 11. Running Automated Tests
+## 11. Running Automated Tests & Linting
 
-Run the full test suite with verbose reporting:
+Run the full test suite (16 tests across data loading, features, models, and skill gap formulas):
 
 ```powershell
-pytest
+pytest -v
 ```
 
 Run code formatting and lint verification:
 
 ```powershell
-ruff check src tests
+ruff check .
 ```
 
 ---
 
-## 12. License & Contributors
+## 12. Team Members & Contributions
 
-- **Author & Project Lead:** ShreyasPlays (<shreyas662006@gmail.com>)
-- **Member 1 (Dataset Acquisition & Validation):** Siddharth Dhanush R (<siddharthdhanush7@gmail.com>)
-- **Project:** Engineering College Project Review - Phase 1: Development & Reproducibility
-- **License:** MIT License (Note: Dataset reuse permissions remain unverified pending committed root LICENSE file)
+- **Project Lead / Architect:** ShreyasPlays (<shreyas662006@gmail.com>)
+- **Member 1 (Dataset Acquisition & Validation):** Ingestion, schema bounds validation, and DVC raw data versioning (`notebooks/01_dataset_acquisition_validation.ipynb`, `reports/dataset_card.md`).
+- **Member 2 (EDA & Feature Engineering):** Exploratory data analysis, 6 composite domain indices, and leakage-free pipeline (`notebooks/02_eda_feature_engineering.ipynb`, `src/feature_engineering.py`).
+- **Member 3 (Baseline Models & Evaluation):** Decision Tree and Random Forest training, MLflow tracking, champion selection, and interactive CLI diagnostic (`notebooks/03_baseline_models_evaluation.ipynb`, `src/train.py`, `src/evaluate.py`, `predict.py`).
+- **Member 4 (MLOps Integration & Reproducibility):** Git/DVC/MLflow audit, pipeline reproduction, shared contribution tracker, automated test verification, and reproducibility notebook (`notebooks/04_mlops_reproducibility.ipynb`).
+
+- **Project:** Engineering College Project Review — Phase 1: Development & Reproducibility
+- **Review Window:** 13–17 October 2026 | **Final Submission:** 16 October 2026
+- **License:** MIT License
