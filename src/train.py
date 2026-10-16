@@ -105,6 +105,7 @@ def train_models(config: Optional[AppConfig] = None) -> Dict[str, Any]:
     rf_params = {
         "n_estimators": rf_cfg.n_estimators,
         "max_depth": rf_cfg.max_depth,
+        "max_features": rf_cfg.max_features,
         "min_samples_split": rf_cfg.min_samples_split,
         "min_samples_leaf": rf_cfg.min_samples_leaf,
         "criterion": rf_cfg.criterion,

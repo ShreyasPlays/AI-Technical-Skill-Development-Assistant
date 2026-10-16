@@ -36,6 +36,7 @@ class DecisionTreeConfig(BaseModel):
 class RandomForestConfig(BaseModel):
     n_estimators: int = Field(default=100)
     max_depth: int = Field(default=8)
+    max_features: Any = Field(default="sqrt")
     min_samples_split: int = Field(default=8)
     min_samples_leaf: int = Field(default=4)
     criterion: str = Field(default="gini")

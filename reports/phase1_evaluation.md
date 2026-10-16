@@ -12,11 +12,11 @@ We evaluated two baseline non-linear classifiers (Decision Tree and Random Fores
 
 | Metric | Decision Tree Classifier | Random Forest Classifier | Delta (RF - DT) |
 | :--- | :---: | :---: | :---: |
-| **Accuracy** | 84.00% | **100.00%** | +16.00% |
-| **Precision (Macro)** | 0.7772 | **1.0000** | +0.2228 |
-| **Recall (Macro)** | 0.8125 | **1.0000** | +0.1875 |
-| **Macro F1-Score** | 0.7879 | **1.0000** | +0.2121 |
-| **Weighted F1-Score** | 0.7914 | **1.0000** | +0.2086 |
+| **Accuracy** | 84.00% | **86.11%** | +2.11% |
+| **Precision (Macro)** | 0.7772 | **0.9669** | +0.1897 |
+| **Recall (Macro)** | 0.8125 | **0.8576** | +0.0451 |
+| **Macro F1-Score** | 0.7879 | **0.8597** | +0.0718 |
+| **Weighted F1-Score** | 0.7914 | **0.8394** | +0.0480 |
 
 ### **Selected Production Model: Random Forest Classifier**
 
@@ -33,7 +33,7 @@ We evaluated two baseline non-linear classifiers (Decision Tree and Random Fores
 
 | Target Career Role | Precision | Recall | F1-Score | Support |
 | :--- | :---: | :---: | :---: | :---: |
-| **AI ML Specialist** | 1.0000 | 1.0000 | 1.0000 | 211 |
+| **AI ML Specialist** | 0.4710 | 1.0000 | 0.6404 | 211 |
 | **API Specialist** | 1.0000 | 1.0000 | 1.0000 | 91 |
 | **Application Support Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
 | **Business Analyst** | 1.0000 | 1.0000 | 1.0000 | 106 |
@@ -42,11 +42,11 @@ We evaluated two baseline non-linear classifiers (Decision Tree and Random Fores
 | **Database Administrator** | 1.0000 | 1.0000 | 1.0000 | 99 |
 | **Graphics Designer** | 1.0000 | 1.0000 | 1.0000 | 98 |
 | **Hardware Engineer** | 1.0000 | 1.0000 | 1.0000 | 96 |
-| **Helpdesk Engineer** | 1.0000 | 1.0000 | 1.0000 | 93 |
-| **Information Security Specialist** | 1.0000 | 1.0000 | 1.0000 | 91 |
-| **Networking Engineer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Helpdesk Engineer** | 1.0000 | 0.8710 | 0.9310 | 93 |
+| **Information Security Specialist** | 1.0000 | 0.5824 | 0.7361 | 91 |
+| **Networking Engineer** | 1.0000 | 0.2315 | 0.3759 | 108 |
 | **Project Manager** | 1.0000 | 1.0000 | 1.0000 | 108 |
-| **Software Developer** | 1.0000 | 1.0000 | 1.0000 | 108 |
+| **Software Developer** | 1.0000 | 0.0370 | 0.0714 | 108 |
 | **Software tester** | 1.0000 | 1.0000 | 1.0000 | 99 |
 | **Technical Writer** | 1.0000 | 1.0000 | 1.0000 | 96 |
 
@@ -89,11 +89,11 @@ Order: **[0]** AI ML Specialist, **[1]** API Specialist, **[2]** Application Sup
 | **[6] Database Administrator** | 0 | 0 | 0 | 0 | 0 |
 | **[7] Graphics Designer** | 0 | 0 | 0 | 0 | 0 |
 | **[8] Hardware Engineer** | 0 | 0 | 0 | 0 | 0 |
-| **[9] Helpdesk Engineer** | 0 | 0 | 0 | 0 | 0 |
-| **[10] Information Security Specialist** | 0 | 0 | 0 | 0 | 0 |
-| **[11] Networking Engineer** | 0 | 0 | 0 | 0 | 0 |
+| **[9] Helpdesk Engineer** | 12 | 0 | 0 | 0 | 0 |
+| **[10] Information Security Specialist** | 38 | 0 | 0 | 0 | 0 |
+| **[11] Networking Engineer** | 83 | 0 | 0 | 0 | 0 |
 | **[12] Project Manager** | 0 | 0 | 0 | 0 | 0 |
-| **[13] Software Developer** | 0 | 0 | 0 | 0 | 0 |
+| **[13] Software Developer** | 104 | 0 | 0 | 0 | 0 |
 | **[14] Software tester** | 0 | 0 | 0 | 0 | 0 |
 | **[15] Technical Writer** | 0 | 0 | 0 | 0 | 0 |
 
