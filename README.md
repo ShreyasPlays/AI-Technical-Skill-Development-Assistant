@@ -238,9 +238,9 @@ Models were evaluated on a held-out, stratified test set of **1,706 candidate pr
 | Model | Test Accuracy | Macro Precision | Macro Recall | Macro F1 | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Decision Tree Classifier** | 84.00% | 0.7772 | 0.8125 | 0.7879 | Baseline |
-| **Random Forest Classifier** | **100.0%** | **1.0000** | **1.0000** | **1.0000** | **Champion Model** |
+| **Random Forest Classifier** | **86.11%** | **0.9669** | **0.8576** | **0.8597** | **Champion Model** |
 
-**Champion Rationale:** Random Forest achieves superior generalization (+16.0% accuracy, +0.2121 macro F1) by aggregating ensemble decision trees, completely eliminating high variance and misclassifications across all 16 target roles.
+**Champion Rationale:** Random Forest achieves superior generalization (+2.11% accuracy, +0.0718 macro F1) by aggregating regularized decision trees, mitigating high variance and ensuring balanced predictions across all 16 target career roles.
 
 ---
 
