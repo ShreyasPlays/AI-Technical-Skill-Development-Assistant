@@ -114,33 +114,7 @@ The environment is strictly pinned and tested on Python 3.11.9:
 - **Dataset Card:** Formally documented in [reports/dataset_card.md](reports/dataset_card.md)
 - **Validation Notebook:** Thorough diagnostic report in [notebooks/01_dataset_acquisition_validation.ipynb](notebooks/01_dataset_acquisition_validation.ipynb)
 
-Layer 1: Raw Dataset Tracking with DVC (.dvc Pointer)
-The Problem: Git cannot efficiently store large data files (CSVs, datasets), and committing large data bloats repository history.
-Our Implementation:
-The actual CSV file lives locally at data/raw/skills_dataset.csv.
-DVC created a small pointer file: 
 
-data/raw/skills_dataset.csv.dvc
-.
-This file records the unique MD5 hash checksum of the dataset:
-yaml
-outs:
-- md5: 1280aa1c7cb0b66dcda792cd0a9ddd11
-  size: 59019
-  path: skills_dataset.csv
-Git only tracks the lightweight .dvc file, while DVC tracks and versions the actual data content.
-Layer 2: Processed Data & Pipeline Versioning (dvc.lock)
-In 
-
-dvc.yaml
- and 
-
-dvc.lock
-, DVC versions not only the raw data, but also the intermediate processed splits:
-data/processed/train.parquet (MD5: cfec3e85...)
-data/processed/test.parquet (MD5: c2e4ef8d...)
-data/processed/feature_metadata.json (MD5: f798f259...)
-If someone edits a single row in the dataset, DVC immediately detects the hash mismatch via dvc status and knows exactly which stages need re-running.
 
 ---
 
