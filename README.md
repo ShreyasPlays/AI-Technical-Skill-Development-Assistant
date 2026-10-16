@@ -96,14 +96,8 @@ The environment is strictly pinned and tested on Python 3.11.9:
 | **scikit-learn** | 1.5.2 | Preprocessing, classification models, evaluation metrics |
 | **DVC** | 3.59.1 | Data versioning & pipeline orchestration |
 | **MLflow** | 2.17.2 | Experiment tracking, model registry, metric provenance |
-| **pathspec** | 0.12.1 | Pattern matching compatibility layer for DVC |
-| **Pydantic** | 2.9.2 | Strongly typed configuration validation |
 | **PyYAML** | 6.0.2 | Human-readable configuration parsing |
-| **Loguru** | 0.7.2 | Structured and standardized logging |
-| **Rich** | 13.9.4 | Terminal formatting and status output |
-| **Ruff** | 0.7.1 | Fast Python linter & code quality enforcer |
-| **pytest** | 9.1.1 | Unit and integration test suite |
-| **ydata-profiling**| 4.12.2 | Automated exploratory profiling |
+
 
 ---
 
