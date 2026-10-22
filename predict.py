@@ -1,149 +1,253 @@
 """
-Interactive Prediction and Skill-Gap Analysis Demo.
-Evaluates student technical competencies against Kaggle Career benchmarks:
-1. Predicts the best-fitting career role using the trained Random Forest Champion model.
-2. Performs mathematical skill-gap analysis: G_i = max(0, R_i - S_i).
-3. Produces a prioritized, actionable skill development roadmap.
+Real-Time Binary Assessment Pass/Fail Prediction CLI (Phase 1 Rework).
+
+Usage:
+    python predict.py
+
+The student enters their 17 technical skill proficiency scores (0-6 each).
+The system:
+  1. Builds the feature vector and applies the saved StandardScaler.
+  2. Predicts assessment_pass (Pass / Fail) using the champion Random Forest model.
+  3. Shows confidence probabilities from all 3 trained classifiers.
+  4. Optionally performs a SkillGapAnalyzer roadmap for a target role of their choice.
 """
 
-import sys
 import json
-from typing import Dict
+import sys
+from pathlib import Path
+from typing import Dict, Optional
 import joblib
 import numpy as np
 import pandas as pd
 
-# Ensure UTF-8 output on Windows consoles
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8")
+# Ensure project root is on sys.path when run as a script
+PROJECT_ROOT = Path(__file__).resolve().parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import load_config
+from src.data_loader import SKILL_COLUMNS, ROLE_REQUIREMENTS
 from src.feature_engineering import engineer_composite_features
 from src.preprocess import SkillGapAnalyzer
 
 
-def predict_profile(skills_dict: Dict[str, float]) -> None:
-    """Predict career role and analyze skill gaps for a given candidate profile."""
-    cfg = load_config()
+# -----------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------
 
-    meta_path = cfg.paths.features_meta_path
-    rf_path = cfg.paths.models_dir / "random_forest.joblib"
+SKILL_DISPLAY_NAMES: Dict[str, str] = {
+    "database_fundamentals":          "Database Fundamentals",
+    "computer_architecture":          "Computer Architecture",
+    "distributed_computing_systems":  "Distributed Computing Systems",
+    "cyber_security":                 "Cyber Security",
+    "networking":                     "Networking",
+    "software_development":           "Software Development",
+    "programming_skills":             "Programming Skills",
+    "project_management":             "Project Management",
+    "computer_forensics_fundamentals":"Computer Forensics Fundamentals",
+    "technical_communication":        "Technical Communication",
+    "ai_ml":                          "AI / Machine Learning",
+    "software_engineering":           "Software Engineering",
+    "business_analysis":              "Business Analysis",
+    "communication_skills":           "Communication Skills",
+    "data_science":                   "Data Science",
+    "troubleshooting_skills":         "Troubleshooting Skills",
+    "graphics_designing":             "Graphics Designing",
+}
 
-    if not meta_path.exists() or not rf_path.exists():
-        print("Error: Models or feature metadata not found. Please train models first.")
-        return
 
-    with open(meta_path, "r", encoding="utf-8") as f:
+def _print_banner():
+    banner = """
+╔══════════════════════════════════════════════════════════════════════╗
+║   AI Technical Skill Development Assistant — Assessment Predictor   ║
+║             Phase 1 Rework | Binary Classification                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+"""
+    print(banner)
+
+
+def _get_skill_input(skill_name: str, display_name: str) -> int:
+    while True:
+        try:
+            val = int(input(f"  {display_name:<40} [0-6]: ").strip())
+            if 0 <= val <= 6:
+                return val
+            print("    ⚠  Please enter an integer between 0 and 6.")
+        except ValueError:
+            print("    ⚠  Invalid input. Please enter a whole number (0-6).")
+
+
+def build_feature_vector(
+    skill_scores: Dict[str, int],
+    feature_columns: list,
+    scaler_mean: list,
+    scaler_scale: list,
+) -> pd.DataFrame:
+    """
+    Build a scaled feature vector from raw skill scores that matches the
+    trained pipeline's feature space.
+    """
+    # Create a single-row DataFrame with skill columns
+    row = pd.DataFrame([skill_scores])
+
+    # Engineer composite features (same logic as feature_engineering.py)
+    row_eng = engineer_composite_features(row)
+
+    # Align to the exact feature columns the pipeline was trained on
+    # Fill any missing columns with 0
+    for col in feature_columns:
+        if col not in row_eng.columns:
+            row_eng[col] = 0.0
+
+    X = row_eng[feature_columns].values.astype(float)
+
+    # Apply saved StandardScaler parameters
+    mean = np.array(scaler_mean)
+    scale = np.array(scaler_scale)
+    X_scaled = (X - mean) / scale
+
+    return pd.DataFrame(X_scaled, columns=feature_columns)
+
+
+def predict_assessment(
+    skill_scores: Dict[str, int],
+    models_dir: Path,
+    meta_path: Path,
+) -> Dict:
+    """
+    Run inference with all 3 trained classifiers and return predictions.
+
+    Returns:
+        dict with keys: prediction (int), confidence (float), model_votes (dict)
+    """
+    with open(meta_path) as f:
         meta = json.load(f)
 
-    rf_model = joblib.load(rf_path)
+    feature_columns = meta["feature_columns"]
+    scaler_mean = meta["scaler_mean"]
+    scaler_scale = meta["scaler_scale"]
 
-    # 1. Fill missing context features with average defaults if not specified
-    for ctx in cfg.data.context_features:
-        if ctx not in skills_dict:
-            skills_dict[ctx] = 0.5
+    X = build_feature_vector(skill_scores, feature_columns, scaler_mean, scaler_scale)
 
-    for skill in cfg.data.skill_features:
-        if skill not in skills_dict:
-            skills_dict[skill] = 2
+    model_files = {
+        "Random Forest":       models_dir / "random_forest.joblib",
+        "Decision Tree":       models_dir / "decision_tree.joblib",
+        "Logistic Regression": models_dir / "logistic_regression.joblib",
+    }
 
-    # 2. Engineer composite features
-    df_raw = pd.DataFrame([skills_dict])
-    df_eng = engineer_composite_features(df_raw)
+    results = {}
+    votes = []
+    for name, path in model_files.items():
+        if not path.exists():
+            continue
+        model = joblib.load(path)
+        pred = int(model.predict(X)[0])
+        prob = float(model.predict_proba(X)[0][1]) if hasattr(model, "predict_proba") else None
+        results[name] = {"prediction": pred, "pass_probability": prob}
+        votes.append(pred)
 
-    feature_cols = meta["feature_columns"]
-    X = df_eng[feature_cols].copy()
+    # Majority vote as final prediction
+    final_prediction = int(round(sum(votes) / len(votes)))
+    # Champion (Random Forest) confidence as primary confidence
+    champion_prob = results.get("Random Forest", {}).get("pass_probability", 0.5)
 
-    # 3. Scale features using saved training parameters
-    mean = np.array(meta["scaler_mean"])
-    scale = np.array(meta["scaler_scale"])
-    X_scaled = pd.DataFrame((X.values - mean) / scale, columns=feature_cols)
+    return {
+        "prediction": final_prediction,
+        "pass_probability": champion_prob,
+        "model_votes": results,
+    }
 
-    # 4. Model Prediction
-    pred_idx = rf_model.predict(X_scaled)[0]
-    probabilities = rf_model.predict_proba(X_scaled)[0]
-    predicted_role = meta["classes"][str(pred_idx)]
 
-    print("\n" + "=" * 68)
-    print(f"[*] PREDICTED CAREER ROLE: {predicted_role.upper()}")
-    print("=" * 68)
-    print("\n[+] Top Model Confidence Probabilities:")
-    top_indices = np.argsort(probabilities)[::-1][:5]
-    for idx in top_indices:
-        prob = probabilities[idx]
-        role_name = meta["classes"][str(idx)]
-        bar = "#" * int(prob * 30)
-        print(f"  {role_name:<32} : {prob * 100:>5.1f}% | {bar}")
+# -----------------------------------------------------------------------
+# Main CLI
+# -----------------------------------------------------------------------
 
-    # 5. Skill Gap Analysis for the predicted role
-    analyzer = SkillGapAnalyzer(cfg.roles)
-    gap_result = analyzer.analyze_gap(skills_dict, target_role=predicted_role)
+def main(config_path: str = "configs/config.yaml"):
+    _print_banner()
 
-    print("\n" + "-" * 68)
-    print(f"[i] Skill-Gap Breakdown for {predicted_role}:")
-    print(f"  * Overall Readiness Score : {gap_result['readiness_percentage']}%")
-    print(f"  * Average Skill Gap G_avg : {gap_result['average_skill_gap']}")
-    print("\n[*] Priority Recommendations to Bridge Gaps:")
-    recs = gap_result["actionable_recommendations"]
-    if recs:
-        for rec in recs:
-            print(f"  - {rec}")
-    else:
-        print("  - [EXCELLENT] Candidate already meets or exceeds all role benchmarks!")
-    print("=" * 68 + "\n")
+    try:
+        config = load_config(config_path)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}")
+        print("Make sure you run this from the project root directory.")
+        sys.exit(1)
+
+    models_dir = config.paths.models_dir
+    meta_path = config.paths.features_meta_path
+
+    if not meta_path.exists():
+        print("ERROR: Feature metadata not found. Please run 'dvc repro' first to train models.")
+        sys.exit(1)
+
+    # ── Collect skill scores ────────────────────────────────────────────
+    print("Enter your technical skill proficiency scores on a scale of 0 to 6:")
+    print("  0 = No experience  |  3 = Intermediate  |  6 = Expert\n")
+
+    skill_scores = {}
+    for skill_key in SKILL_COLUMNS:
+        display = SKILL_DISPLAY_NAMES.get(skill_key, skill_key.replace("_", " ").title())
+        skill_scores[skill_key] = _get_skill_input(skill_key, display)
+
+    # ── Predict ─────────────────────────────────────────────────────────
+    print("\n" + "─" * 70)
+    print("  🔍  Analysing your profile...")
+    print("─" * 70)
+
+    result = predict_assessment(skill_scores, models_dir, meta_path)
+
+    pred = result["prediction"]
+    prob = result["pass_probability"]
+    label = "✅  PASS" if pred == 1 else "❌  FAIL"
+
+    print(f"\n  Assessment Prediction  :  {label}")
+    print(f"  Pass Probability       :  {prob * 100:.1f}%  (Random Forest champion)")
+    print(f"\n  Individual Model Votes:")
+    for model_name, vote_info in result["model_votes"].items():
+        vote_label = "Pass" if vote_info["prediction"] == 1 else "Fail"
+        prob_str = f"{vote_info['pass_probability']*100:.1f}%" if vote_info["pass_probability"] else "N/A"
+        print(f"    {model_name:<25} →  {vote_label}  ({prob_str} pass confidence)")
+
+    print("\n" + "─" * 70)
+
+    # ── Optional skill gap analysis ─────────────────────────────────────
+    print("\n  Would you like a personalised skill-gap roadmap for a target role?")
+    roles = sorted(ROLE_REQUIREMENTS.keys())
+    for i, role in enumerate(roles, 1):
+        print(f"    {i:2d}. {role}")
+    print("     0. Skip")
+
+    while True:
+        try:
+            choice = int(input("\n  Enter role number: ").strip())
+            if choice == 0:
+                break
+            if 1 <= choice <= len(roles):
+                target_role = roles[choice - 1]
+                analyzer = SkillGapAnalyzer(ROLE_REQUIREMENTS)
+                gap_result = analyzer.analyze_gap(skill_scores, target_role)
+
+                print(f"\n{'─'*70}")
+                print(f"  📊  Skill Gap Roadmap — Target Role: {target_role}")
+                print(f"{'─'*70}")
+                print(f"  Role Readiness     : {gap_result['readiness_percentage']}%")
+                print(f"  Average Skill Gap  : {gap_result['average_skill_gap']} points")
+
+                if gap_result["actionable_recommendations"]:
+                    print("\n  Priority Learning Areas:")
+                    for i, rec in enumerate(gap_result["actionable_recommendations"], 1):
+                        print(f"    {i}. {rec}")
+                else:
+                    print("\n  🎉  You already meet all requirements for this role!")
+                break
+            else:
+                print(f"    ⚠  Enter a number between 0 and {len(roles)}.")
+        except ValueError:
+            print("    ⚠  Invalid input. Please enter a number.")
+
+    print(f"\n{'─'*70}")
+    print("  Thank you for using the AI Technical Skill Development Assistant!")
+    print(f"{'─'*70}\n")
 
 
 if __name__ == "__main__":
-    print("\n" + "=" * 68)
-    print("  AI TECHNICAL SKILL DEVELOPMENT ASSISTANT - INFERENCE DEMO")
-    print("=" * 68)
-    print("\nChoose an option:")
-    print("  1. Test Preset Profile: AI & Data Science Candidate")
-    print("  2. Test Preset Profile: Cyber & Network Security Candidate")
-    print("  3. Test Preset Profile: Software & App Developer Candidate")
-    print("  4. Enter Your Own Custom Skill Ratings (0 = None, 6 = Expert)")
-
-    choice = input("\nEnter choice [1-4] (default=1): ").strip() or "1"
-
-    if choice == "1":
-        candidate = {
-            "ai_ml": 5, "data_science": 5, "programming_skills": 4, "database_fundamentals": 3,
-            "distributed_computing_systems": 3, "software_engineering": 3, "networking": 1,
-            "cyber_security": 1, "computer_architecture": 2, "project_management": 2,
-            "technical_communication": 3, "communication_skills": 4, "troubleshooting_skills": 3,
-            "graphics_designing": 1, "business_analysis": 2, "computer_forensics_fundamentals": 1,
-            "software_development": 3, "openness": 0.8, "conscientiousness": 0.7, "extraversion": 0.5,
-            "agreeableness": 0.6, "emotional_range": 0.3, "conversation": 0.4, "openness_to_change": 0.7,
-            "hedonism": 0.2, "self_enhancement": 0.5, "self_transcendence": 0.4,
-        }
-    elif choice == "2":
-        candidate = {
-            "ai_ml": 1, "data_science": 1, "programming_skills": 3, "database_fundamentals": 2,
-            "distributed_computing_systems": 3, "software_engineering": 2, "networking": 5,
-            "cyber_security": 6, "computer_architecture": 3, "project_management": 2,
-            "technical_communication": 3, "communication_skills": 3, "troubleshooting_skills": 5,
-            "graphics_designing": 0, "business_analysis": 2, "computer_forensics_fundamentals": 5,
-            "software_development": 2, "openness": 0.6, "conscientiousness": 0.8, "extraversion": 0.4,
-            "agreeableness": 0.5, "emotional_range": 0.2, "conversation": 0.3, "openness_to_change": 0.5,
-            "hedonism": 0.1, "self_enhancement": 0.6, "self_transcendence": 0.3,
-        }
-    elif choice == "3":
-        candidate = {
-            "ai_ml": 2, "data_science": 2, "programming_skills": 5, "database_fundamentals": 4,
-            "distributed_computing_systems": 3, "software_engineering": 5, "networking": 2,
-            "cyber_security": 2, "computer_architecture": 3, "project_management": 3,
-            "technical_communication": 3, "communication_skills": 4, "troubleshooting_skills": 4,
-            "graphics_designing": 2, "business_analysis": 3, "computer_forensics_fundamentals": 1,
-            "software_development": 6, "openness": 0.7, "conscientiousness": 0.7, "extraversion": 0.5,
-            "agreeableness": 0.6, "emotional_range": 0.3, "conversation": 0.5, "openness_to_change": 0.6,
-            "hedonism": 0.3, "self_enhancement": 0.5, "self_transcendence": 0.4,
-        }
-    else:
-        cfg = load_config()
-        print("\nEnter skill ratings (0 = Novice, 6 = Expert):")
-        candidate = {}
-        for skill in cfg.data.skill_features:
-            val = input(f"  {skill:<32} (0-6): ").strip()
-            candidate[skill] = int(val) if val.isdigit() and 0 <= int(val) <= 6 else 3
-
-    predict_profile(candidate)
+    main()

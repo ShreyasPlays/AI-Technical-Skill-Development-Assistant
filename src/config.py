@@ -14,20 +14,24 @@ class PathsConfig(BaseModel):
     models_dir: Path = Path("models")
     reports_dir: Path = Path("reports")
     metrics_path: Path = Path("reports/metrics.json")
-    evaluation_report_path: Path = Path("reports/phase1_evaluation.md")
+    evaluation_report_path: Path = Path("reports/phase1_rework_evaluation.md")
 
 
 class DataConfig(BaseModel):
     test_size: float = Field(default=0.2, gt=0.0, lt=1.0)
     random_state: int = Field(default=42)
     stratify: bool = Field(default=True)
-    target_column: str = Field(default="target_role")
+    target_column: str = Field(default="assessment_pass")
+    assessment_threshold: float = Field(
+        default=0.50,
+        description="Normalised core-skill score threshold (0–1) above which a student probabilistically passes.",
+    )
     skill_features: List[str] = Field(default_factory=list)
     context_features: List[str] = Field(default_factory=list)
 
 
 class DecisionTreeConfig(BaseModel):
-    max_depth: int = Field(default=6)
+    max_depth: int = Field(default=5)
     min_samples_split: int = Field(default=10)
     min_samples_leaf: int = Field(default=5)
     criterion: str = Field(default="gini")
@@ -35,7 +39,7 @@ class DecisionTreeConfig(BaseModel):
 
 class RandomForestConfig(BaseModel):
     n_estimators: int = Field(default=100)
-    max_depth: int = Field(default=8)
+    max_depth: int = Field(default=7)
     max_features: Any = Field(default="sqrt")
     min_samples_split: int = Field(default=8)
     min_samples_leaf: int = Field(default=4)
@@ -43,20 +47,27 @@ class RandomForestConfig(BaseModel):
     n_jobs: int = Field(default=-1)
 
 
+class LogisticRegressionConfig(BaseModel):
+    C: float = Field(default=1.0, description="Inverse regularisation strength.")
+    max_iter: int = Field(default=1000)
+    solver: str = Field(default="lbfgs")
+
+
 class ModelsConfig(BaseModel):
     random_state: int = Field(default=42)
     decision_tree: DecisionTreeConfig = Field(default_factory=DecisionTreeConfig)
     random_forest: RandomForestConfig = Field(default_factory=RandomForestConfig)
+    logistic_regression: LogisticRegressionConfig = Field(default_factory=LogisticRegressionConfig)
 
 
 class MLflowConfig(BaseModel):
-    experiment_name: str = Field(default="Technical_Skill_Assistant")
+    experiment_name: str = Field(default="Assessment_Pass_Predictor")
     tracking_uri: str = Field(default="mlruns")
 
 
 class AppConfig(BaseModel):
     project_name: str = Field(default="AI-Technical-Skill-Development-Assistant")
-    version: str = Field(default="1.0.0")
+    version: str = Field(default="2.0.0")
     paths: PathsConfig = Field(default_factory=PathsConfig)
     data: DataConfig = Field(default_factory=DataConfig)
     roles: Dict[str, Dict[str, int]] = Field(default_factory=dict)

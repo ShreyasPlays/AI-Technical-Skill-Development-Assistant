@@ -5,98 +5,106 @@ stages:
     deps:
     - path: configs/config.yaml
       hash: md5
-      md5: 0af181e1546cfa8d5631a4849fbbb54f
-      size: 3890
+      md5: 3480e1b2d8ebaba76553e398660f015d
+      size: 4566
     - path: data/raw/skills_dataset.csv
       hash: md5
       md5: a30ba1b70e475af3121bc63ce7575ded
       size: 1486369
     - path: src/data_loader.py
       hash: md5
-      md5: 53c6df4da66e5ad33640de75eea46bbf
-      size: 7068
+      md5: b8a02bcd1589b666c3bab2a0bc433e0a
+      size: 10746
     - path: src/feature_engineering.py
       hash: md5
-      md5: edf74296185caf890026f3d5695d1e78
-      size: 7341
+      md5: 490f4102340a4b123baf05b8f9ccd618
+      size: 9577
     - path: src/preprocess.py
       hash: md5
-      md5: ef7a6e18fd6f380731ca9c04f22245fb
-      size: 6252
+      md5: 286107e25137c9303b3f895b3cd836c7
+      size: 11535
     outs:
     - path: data/processed/feature_metadata.json
       hash: md5
-      md5: f798f259b96041ac424a2ecf4fdca606
-      size: 3282
+      md5: 0a4400f5986ac2734c2f82392d325443
+      size: 2250
     - path: data/processed/test.parquet
       hash: md5
-      md5: c2e4ef8dd95d3e0dcd9381f5e674e86f
-      size: 89352
+      md5: 79cbcaf4b48fa5a6a19b016e142a5beb
+      size: 45594
     - path: data/processed/train.parquet
       hash: md5
-      md5: cfec3e85610cee2acd2f8ad4510db753
-      size: 210415
+      md5: 4ae90c3f6da880bfc66ba4df0a566357
+      size: 108805
   train:
     cmd: .venv\Scripts\python.exe -m src.train
     deps:
     - path: configs/config.yaml
       hash: md5
-      md5: 0af181e1546cfa8d5631a4849fbbb54f
-      size: 3890
+      md5: 3480e1b2d8ebaba76553e398660f015d
+      size: 4566
     - path: data/processed/train.parquet
       hash: md5
-      md5: cfec3e85610cee2acd2f8ad4510db753
-      size: 210415
+      md5: 4ae90c3f6da880bfc66ba4df0a566357
+      size: 108805
     - path: src/train.py
       hash: md5
-      md5: 210f7ed88e6a2063991dfd3bed703eb1
-      size: 5787
+      md5: b3f45cb51a5de53c323491e42c2c6154
+      size: 7982
     outs:
     - path: models/decision_tree.joblib
       hash: md5
-      md5: f33873c0c6fe9666422d0a5d07621c60
-      size: 7113
+      md5: dcf930196ed6328ec8e5eaf6fc1f6455
+      size: 6985
+    - path: models/logistic_regression.joblib
+      hash: md5
+      md5: ac70a51764801e295c93130c1c082e25
+      size: 1823
     - path: models/random_forest.joblib
       hash: md5
-      md5: f2b58ae945910b7f291282a13779ed2e
-      size: 114201
+      md5: 0ad39a7783533ece1c8d04751c12950a
+      size: 1259193
     - path: models/training_summary.json
       hash: md5
-      md5: 2479762a476d2a9333bf4a1603ba4dc9
-      size: 353
+      md5: 984c3b8ff9de5f05d3ce2dc95269bac7
+      size: 540
   evaluate:
     cmd: .venv\Scripts\python.exe -m src.evaluate
     deps:
     - path: configs/config.yaml
       hash: md5
-      md5: 0af181e1546cfa8d5631a4849fbbb54f
-      size: 3890
+      md5: 3480e1b2d8ebaba76553e398660f015d
+      size: 4566
     - path: data/processed/feature_metadata.json
       hash: md5
-      md5: f798f259b96041ac424a2ecf4fdca606
-      size: 3282
+      md5: 0a4400f5986ac2734c2f82392d325443
+      size: 2250
     - path: data/processed/test.parquet
       hash: md5
-      md5: c2e4ef8dd95d3e0dcd9381f5e674e86f
-      size: 89352
+      md5: 79cbcaf4b48fa5a6a19b016e142a5beb
+      size: 45594
     - path: models/decision_tree.joblib
       hash: md5
-      md5: f33873c0c6fe9666422d0a5d07621c60
-      size: 7113
+      md5: dcf930196ed6328ec8e5eaf6fc1f6455
+      size: 6985
+    - path: models/logistic_regression.joblib
+      hash: md5
+      md5: ac70a51764801e295c93130c1c082e25
+      size: 1823
     - path: models/random_forest.joblib
       hash: md5
-      md5: f2b58ae945910b7f291282a13779ed2e
-      size: 114201
+      md5: 0ad39a7783533ece1c8d04751c12950a
+      size: 1259193
     - path: src/evaluate.py
       hash: md5
-      md5: e8f70b8ad821558c354b7f595649fb4f
-      size: 11789
+      md5: 7d13d5bbb7af3afe637426a3a44eb498
+      size: 13463
     outs:
     - path: reports/metrics.json
       hash: md5
-      md5: c9822355d4a5ea634ec330470736044a
-      size: 382
-    - path: reports/phase1_evaluation.md
+      md5: 37b1b877948554f5e48c391807ea90a3
+      size: 497
+    - path: reports/phase1_rework_evaluation.md
       hash: md5
-      md5: 1c1e076cc29eafae3e91075076bbc270
-      size: 5877
+      md5: 1a8b660f8e33c4b8c372f341cfcca61a
+      size: 4118

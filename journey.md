@@ -138,3 +138,118 @@ tests/test_skill_gap.py::test_exceeding_proficiency_has_zero_gap PASSED  [100%]
 
 **Final Phase 1 Verdict:** **100% READY FOR EVALUATION**
 
+---
+
+---
+
+# Engineering Journey Log: Phase 1 Rework
+
+**Rework Directive:** Teacher-directed reformulation of the Phase 1 ML task.  
+**Original problem:** 16-class career role prediction (100% RF accuracy — artificially easy on synthetic data).  
+**Reworked problem:** Binary classification — "Will this student pass the online technical assessment to qualify for the interview round?"
+
+---
+
+## R1. Rework Milestones
+
+| Milestone | Status | Description |
+| :--- | :---: | :--- |
+| **R1: Problem Reformulation** | Completed | Converted 16-class role prediction to binary assessment gate classification. Justified with teacher feedback that 100% accuracy is unrealistic and the new framing is more educationally relevant. |
+| **R2: Label Engineering Design** | Completed | Designed `AssessmentLabelGenerator` — probabilistic sigmoid-Bernoulli label from 6 core assessment skills. Threshold = 0.50 (normalised). Reproducible via seed=42. |
+| **R3: data_loader.py Update** | Completed | Added `CORE_ASSESSMENT_WEIGHTS` (6 skills, weights sum to 1.0) and comprehensive `ROLE_REQUIREMENTS` for all 16 roles (used by SkillGapAnalyzer). |
+| **R4: config.py Update** | Completed | Added `LogisticRegressionConfig`, `assessment_threshold` field, updated `target_column` default to `"assessment_pass"`, bumped version to 2.0.0. |
+| **R5: configs/config.yaml Update** | Completed | Updated `target_column`, `assessment_threshold=0.50`, constrained hyperparameters (DT: max_depth=5, RF: max_depth=7), added logistic_regression block. |
+| **R6: preprocess.py Update** | Completed | Added `AssessmentLabelGenerator` class using sigmoid probability + Bernoulli sampling. Updated `run_preprocessing_pipeline` to call label generator and stratify on `assessment_pass`. |
+| **R7: feature_engineering.py Rebuild** | Completed | New feature set: 25 features (17 raw skills + 5 composites + 3 aggregate stats: overall_mean, breadth≥3, depth≥5). Personality and assessment_score columns explicitly excluded from model. |
+| **R8: train.py Extension** | Completed | Added Logistic Regression as third classifier. Renamed MLflow runs for binary task. MLflow experiment renamed to `Assessment_Pass_Predictor`. |
+| **R9: evaluate.py Rebuild** | Completed | Full binary evaluation: Accuracy, Precision, Recall, F1, ROC-AUC, 2×2 confusion matrix. Champion selected by ROC-AUC. Detailed Markdown report with label engineering explanation. |
+| **R10: predict.py Full Rewrite** | Completed | New CLI: student enters 17 skills → 3 models vote → Pass/Fail + RF confidence % displayed. Optional role-specific SkillGapAnalyzer roadmap from ROLE_REQUIREMENTS. |
+| **R11: dvc.yaml Update** | Completed | Added `logistic_regression.joblib` to train/evaluate stages. Updated report output path to `phase1_rework_evaluation.md`. |
+| **R12: Test Suite Update (18 tests)** | Completed | Updated all 4 test files for binary classification. New tests: CORE_ASSESSMENT_WEIGHTS sum validation, ROLE_REQUIREMENTS coverage, AssessmentLabelGenerator properties (binary, bounded, reproducible, high-skill=pass, zero-skill=fail), 25-feature count, personality exclusion, assessment_score leakage prevention, 3-model binary metrics. |
+| **R13: README.md Full Rewrite** | Completed | Updated problem statement, new Mermaid architecture diagram (4-stage pipeline), label engineering math, 25-feature table, 3-model performance comparison, updated tools table, project structure, quick start guide. |
+
+---
+
+## R2. Rework Design Decisions & Rationale
+
+### Decision R1: Binary Pass/Fail vs. Multi-Class Role Prediction
+
+**Why:** The original 16-class role prediction achieved 100% accuracy because the Kaggle Career Mapping dataset is semi-synthetic — skills are constructed to directly match assigned roles. This makes it trivially separable. The binary assessment framing is:
+1. More meaningful (students genuinely need to know if they'll pass the screening)
+2. Non-trivial (70-80% accuracy reflects real assessment uncertainty)
+3. Generalizable (works across all 16 roles without needing to know the student's target)
+
+### Decision R2: Probabilistic Label via Sigmoid-Bernoulli
+
+**Why not a hard threshold?** A deterministic threshold (e.g., `skill_mean >= 3.5 → Pass`) would make the label perfectly derivable from the features. Even a shallow tree would learn it exactly (100% accuracy again). The sigmoid-Bernoulli approach:
+- Students with `score_norm = 0.50` have exactly 50% pass probability
+- Students far above threshold: >90% pass probability
+- Students far below threshold: <10% pass probability
+- Boundary noise prevents any classifier from exceeding ~85% accuracy
+- Seed=42 guarantees full reproducibility for DVC tracking
+
+### Decision R3: 6 Core Assessment Skills (not all 17)
+
+**Why 6 specific skills?** Online placement assessments (HackerRank, CodeSignal, AMCAT) empirically focus on programming, databases, software development, troubleshooting, engineering design, and networking concepts. Using all 17 would make the assessment score nearly equal to the overall skill mean — too easy to predict. Using the 6 most relevant creates genuine signal without being trivially learnable.
+
+### Decision R4: Exclude Personality Features from Model
+
+**Why:** The online assessment is purely technical. Including personality scores (conscientiousness, openness, etc.) would:
+1. Reduce interpretability ("pass because you're conscientious?" is not actionable)
+2. Introduce demographic fairness concerns
+3. Mix signals — the `assessment_score` is computed from technical skills only
+
+Personality features remain in the raw data for EDA in `02_eda_feature_engineering.ipynb`.
+
+### Decision R5: Exclude assessment_score from Model Features
+
+**Why:** `assessment_score` is the continuous version of the label. Including it as a feature would cause the classifier to simply learn `if assessment_score >= 0.50 → pass`, achieving near-perfect accuracy. This is data leakage. The model must learn from the 25 technical features without access to the scoring formula.
+
+---
+
+## R3. Problems Encountered & Engineering Solutions
+
+### Problem R1: Feature Count Changed — Test Expected 34 Features
+- **Symptom:** Old `test_pipeline_fit_and_transform` expected 34 feature columns (17 skills + 10 personality + 6 composites + 1 target encoder)
+- **Root Cause:** Phase 1 included personality columns and used a LabelEncoder for 16 classes.
+- **Solution:** Updated test to expect 25 features: 17 skills + 5 composites + 3 aggregate stats. Personality and assessment_score explicitly asserted as excluded.
+
+### Problem R2: SkillGapAnalyzer Needs Role Requirements at Inference
+- **Symptom:** `predict.py` uses SkillGapAnalyzer but config's `roles` dict and the new `ROLE_REQUIREMENTS` in data_loader must stay in sync.
+- **Root Cause:** Dual definitions could drift independently.
+- **Solution:** Added `test_config_and_data_loader_roles_consistent` test to assert both dicts contain exactly the same 16 roles. predict.py imports ROLE_REQUIREMENTS directly from data_loader (single source of truth).
+
+### Problem R3: sigmoid function dependency on scipy
+- **Symptom:** Initially planned to use `scipy.special.expit` for the sigmoid.
+- **Root Cause:** scipy is not in `requirements.txt` (it's a heavy dependency).
+- **Solution:** Implemented sigmoid as `1.0 / (1.0 + np.exp(-x))` in `AssessmentLabelGenerator._sigmoid()` — no scipy needed.
+
+---
+
+## R4. Updated Dependency Specification
+
+| Library | Version | Status | Change |
+| :--- | :---: | :---: | :--- |
+| Python | 3.11.9 | Unchanged | — |
+| NumPy | 1.26.4 | Unchanged | — |
+| Pandas | 2.2.3 | Unchanged | — |
+| scikit-learn | 1.5.2 | **Extended** | Added `LogisticRegression`, `roc_auc_score` |
+| DVC | 3.59.1 | Unchanged | — |
+| MLflow | 2.17.2 | Unchanged | — |
+| pathspec | 0.12.1 | Unchanged | — |
+| Pydantic | 2.9.2 | **Extended** | Added `LogisticRegressionConfig`, `assessment_threshold` field |
+| PyYAML | 6.0.2 | Unchanged | — |
+| Loguru | 0.7.2 | Unchanged | — |
+| pytest | 9.1.1 | Unchanged | — |
+
+---
+
+## R5. Updated Team Contributions
+
+| Member | Rework Task | Files Changed |
+| :--- | :--- | :--- |
+| **Member 1** | Dataset re-validation + CORE_ASSESSMENT_WEIGHTS justification | `src/data_loader.py`, `notebooks/01_dataset_acquisition_validation.ipynb` |
+| **Member 2** | Label engineering EDA + composite feature analysis | `src/preprocess.py`, `src/feature_engineering.py`, `notebooks/02_eda_feature_engineering.ipynb` |
+| **Member 3** | Binary model training, ROC-AUC evaluation, predict.py rewrite | `src/train.py`, `src/evaluate.py`, `predict.py`, `notebooks/03_baseline_models_evaluation.ipynb` |
+| **Member 4** | DVC pipeline update, config rework, test suite update, README, journey.md | `configs/config.yaml`, `src/config.py`, `dvc.yaml`, `tests/`, `README.md`, `journey.md` |
+

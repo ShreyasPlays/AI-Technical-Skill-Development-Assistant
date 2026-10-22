@@ -4,7 +4,7 @@ Handles Kaggle Career Mapping benchmark dataset ingestion, schema validation, an
 """
 
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from loguru import logger
 import numpy as np
 import pandas as pd
@@ -65,6 +65,89 @@ ROLE_CLASSES: List[str] = [
     "API Specialist",
     "Information Security Specialist",
 ]
+
+# -----------------------------------------------------------------------
+# Core Assessment Weights
+# Defines the 6 primary skills evaluated in the online technical screening.
+# These mirror what most real-world technical assessments (HackerRank, CodeSignal, etc.)
+# prioritise for campus placements. Weights sum to 1.0.
+# -----------------------------------------------------------------------
+CORE_ASSESSMENT_WEIGHTS: Dict[str, float] = {
+    "programming_skills":       0.22,
+    "database_fundamentals":    0.18,
+    "software_development":     0.18,
+    "troubleshooting_skills":   0.15,
+    "software_engineering":     0.15,
+    "networking":               0.12,
+}
+
+# -----------------------------------------------------------------------
+# Role-specific minimum skill requirements used by the SkillGapAnalyzer
+# in predict.py for personalised learning roadmaps.
+# -----------------------------------------------------------------------
+ROLE_REQUIREMENTS: Dict[str, Dict[str, int]] = {
+    "AI ML Specialist": {
+        "ai_ml": 5, "data_science": 5, "programming_skills": 4,
+        "database_fundamentals": 3, "distributed_computing_systems": 3, "software_engineering": 3,
+    },
+    "Database Administrator": {
+        "database_fundamentals": 6, "distributed_computing_systems": 4,
+        "troubleshooting_skills": 4, "programming_skills": 3, "networking": 3,
+    },
+    "Software Developer": {
+        "software_development": 6, "programming_skills": 5, "software_engineering": 5,
+        "database_fundamentals": 3, "troubleshooting_skills": 3,
+    },
+    "Cyber Security Specialist": {
+        "cyber_security": 6, "networking": 5, "computer_forensics_fundamentals": 4,
+        "troubleshooting_skills": 4, "programming_skills": 3,
+    },
+    "Networking Engineer": {
+        "networking": 6, "cyber_security": 4, "troubleshooting_skills": 4,
+        "distributed_computing_systems": 4, "computer_architecture": 3,
+    },
+    "Hardware Engineer": {
+        "computer_architecture": 6, "troubleshooting_skills": 4,
+        "networking": 3, "software_engineering": 3,
+    },
+    "Project Manager": {
+        "project_management": 6, "business_analysis": 5,
+        "technical_communication": 5, "communication_skills": 5,
+    },
+    "Business Analyst": {
+        "business_analysis": 6, "project_management": 4,
+        "technical_communication": 5, "communication_skills": 5,
+    },
+    "Application Support Engineer": {
+        "distributed_computing_systems": 6, "troubleshooting_skills": 5,
+        "software_development": 4, "database_fundamentals": 3,
+    },
+    "Software tester": {
+        "software_engineering": 6, "troubleshooting_skills": 5,
+        "programming_skills": 4, "software_development": 3,
+    },
+    "Graphics Designer": {
+        "graphics_designing": 6, "communication_skills": 4, "technical_communication": 3,
+    },
+    "Technical Writer": {
+        "technical_communication": 6, "communication_skills": 5, "software_engineering": 3,
+    },
+    "Helpdesk Engineer": {
+        "troubleshooting_skills": 6, "communication_skills": 5,
+        "networking": 4, "computer_architecture": 3,
+    },
+    "Information Security Specialist": {
+        "computer_forensics_fundamentals": 6, "cyber_security": 5,
+        "networking": 4, "troubleshooting_skills": 3,
+    },
+    "API Specialist": {
+        "programming_skills": 6, "software_development": 5,
+        "distributed_computing_systems": 4, "software_engineering": 4,
+    },
+    "Customer Service Executive": {
+        "communication_skills": 6, "technical_communication": 4, "troubleshooting_skills": 3,
+    },
+}
 
 KAGGLE_RAW_URL: str = (
     "https://raw.githubusercontent.com/TuhinPatra633/Career-Prediction-Using-Machine-Learning/master/Data/CareerMapping.csv"
@@ -191,3 +274,4 @@ if __name__ == "__main__":
     print(loaded_df.head())
     print("\nRole distribution:")
     print(loaded_df["target_role"].value_counts())
+    print(f"\nCore assessment weights: {CORE_ASSESSMENT_WEIGHTS}")

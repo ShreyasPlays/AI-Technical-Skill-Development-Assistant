@@ -5,19 +5,24 @@
 [![MLflow 2.17](https://img.shields.io/badge/MLflow-2.17.2-0194E2.svg)](https://mlflow.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Version](https://img.shields.io/badge/Version-2.0.0%20(Rework)-orange.svg)]()
 
-An engineering-grade MLOps system that evaluates student technical competencies, computes mathematical skill gaps against industry role requirements, provides targeted learning paths, and predicts career role fit using versioned, reproducible machine learning pipelines.
+An engineering-grade MLOps system that predicts whether a student will **pass or fail an online technical assessment** — the critical screening gate before the interview round. Uses versioned, reproducible ML pipelines with DVC + MLflow and 17 technical skill dimensions from an 8,528-student benchmark dataset.
 
 ---
 
 ## 1. Project Overview & Motivation
 
-In technical education and campus placements, students frequently face uncertainty regarding whether their skills meet industry standards for roles such as **Machine Learning Engineer**, **Data Scientist**, **Full Stack Developer**, **DevOps Engineer**, and **Data Analyst**.
+Campus placement pipelines universally include an **online technical assessment round** before students progress to HR/technical interviews. Students often prepare for interviews without knowing whether they are ready for the assessment screening itself.
 
-This project provides:
-1. **Rule-Based Skill-Gap Analysis:** Mathematical quantification of individual skill deficits ($G_i$) and cohort average gaps ($G_{avg}$), generating ranked learning recommendations independent of model predictions.
-2. **Predictive Role Fit Classification:** Supervised baseline classifiers (Decision Tree & Random Forest) trained to map multi-dimensional skill profiles to optimal career tracks.
-3. **Reproducible MLOps Infrastructure:** Strict dependency locking, data versioning with **DVC**, experiment tracking with **MLflow**, and multi-stage orchestration via **DVC Pipelines**.
+This system solves that problem by:
+
+1. **Binary Assessment Gate Prediction:** Given a student's proficiency in 17 technical skill domains, predict **Pass (1)** or **Fail (0)** for the online screening round.
+2. **Confidence Estimation:** All three trained classifiers output probability scores; the Random Forest champion provides a pass confidence percentage.
+3. **Personalised Skill-Gap Roadmap:** After prediction, a rule-based `SkillGapAnalyzer` computes role-specific learning priorities using the formula G_i = max(0, R_i - S_i).
+4. **Reproducible MLOps Infrastructure:** Full DVC pipeline (`dvc repro`), MLflow experiment tracking, and automated pytest suite.
+
+> **Phase 1 Rework Note:** The original Phase 1 targeted 16-class career role prediction, which achieved 100% accuracy on a synthetic dataset — an artificially easy task with no real learning value. This rework reframes the problem as a realistic binary classification challenge with intentional uncertainty, targeting **70–80% test accuracy** to reflect genuine assessment variability.
 
 ---
 
@@ -26,244 +31,269 @@ This project provides:
 ```mermaid
 flowchart TD
     subgraph DataLayer ["Data Layer"]
-        A["data/raw/skills_dataset.csv"] -->|DVC Tracking| B["data/raw/skills_dataset.csv.dvc"]
+        A["data/raw/skills_dataset.csv\n(N=8,528 | 17 skills | 10 personality | 16 roles)"]
+        A --> |DVC tracked| B["skills_dataset.csv.dvc"]
     end
 
-    subgraph PipelineOrchestration ["DVC Pipeline: dvc repro"]
-        A -->|Stage 1: Preprocess| C["src/preprocess.py & src/feature_engineering.py"]
-        C --> D["data/processed/train.parquet"]
-        C --> E["data/processed/test.parquet"]
-        C --> F["data/processed/feature_metadata.json"]
-        
-        D -->|Stage 2: Train| G["src/train.py"]
-        G --> H["models/decision_tree.joblib"]
-        G --> I["models/random_forest.joblib"]
-        G --> J[("MLflow Tracking: Technical_Skill_Assistant")]
-        
-        E -->|Stage 3: Evaluate| K["src/evaluate.py"]
-        F --> K
-        H --> K
-        I --> K
-        K --> L["reports/metrics.json"]
-        K --> M["reports/phase1_evaluation.md"]
-        K --> J
+    subgraph Stage1 ["Stage 1 — Preprocess & Label Engineering"]
+        A --> C1["load_raw_data() — schema & bounds validation"]
+        C1 --> C2["AssessmentLabelGenerator\nWeighted core-skill score → sigmoid → Bernoulli sample\nThreshold = 0.50 | Seed = 42"]
+        C2 --> C3["split_data_leak_free()\nStratified 80/20 on assessment_pass"]
+        C3 --> D1["train_split.parquet (N=6,822)"]
+        C3 --> D2["test_split.parquet  (N=1,706)"]
     end
 
-    subgraph RuleBasedInference ["Rule-Based Inference"]
-        N["Student Input Profile"] --> O["SkillGapAnalyzer"]
-        O --> P["Skill Gap Metric G_i = max(0, R_i - S_i)"]
-        P --> Q["Prioritized Improvement Recommendations"]
+    subgraph Stage2 ["Stage 2 — Feature Engineering"]
+        D1 --> E1["engineer_composite_features()\n+ 5 domain indices + 3 aggregate stats"]
+        E1 --> E2["SkillFeaturePipeline.fit_transform()\nStandardScaler fit on train only\n25 features | Personality excluded"]
+        E2 --> F1["data/processed/train.parquet"]
+        E2 --> F2["data/processed/test.parquet"]
+        E2 --> F3["feature_metadata.json\n(column names, scaler params)"]
+    end
+
+    subgraph Stage3 ["Stage 3 — Train (3 Classifiers)"]
+        F1 --> G1["Decision Tree\nmax_depth=5"]
+        F1 --> G2["Random Forest\nn_est=100, max_depth=7"]
+        F1 --> G3["Logistic Regression\nC=1.0, solver=lbfgs"]
+        G1 --> H1["models/decision_tree.joblib"]
+        G2 --> H2["models/random_forest.joblib"]
+        G3 --> H3["models/logistic_regression.joblib"]
+        G1 & G2 & G3 --> MLflow["MLflow — Assessment_Pass_Predictor experiment\n(params, metrics, dataset SHA-256, model artifacts)"]
+    end
+
+    subgraph Stage4 ["Stage 4 — Evaluate"]
+        F2 & H1 & H2 & H3 --> I["Binary Metrics per Model\nAccuracy | Precision | Recall | F1 | ROC-AUC"]
+        I --> J1["reports/metrics.json (DVC tracked)"]
+        I --> J2["reports/phase1_rework_evaluation.md"]
+        I --> J3["Champion: Random Forest\n(selected by ROC-AUC)"]
+    end
+
+    subgraph Inference ["Real-Time Inference — predict.py"]
+        K["Student enters 17 skill scores (0-6)"]
+        K --> L["build_feature_vector()\nengineer composites + apply saved scaler"]
+        L --> M["All 3 models vote\nMajority + RF confidence %"]
+        M --> N["Pass / Fail Prediction\n+ Optional SkillGapAnalyzer Roadmap"]
     end
 ```
 
 ---
 
-## 3. Mathematical Skill-Gap Formulation
+## 3. Problem Definition
 
-Given a student proficiency vector $S = [S_1, S_2, \dots, S_n]$ and a target role requirement vector $R = [R_1, R_2, \dots, R_n]$ on a 1–5 scale:
+### 3.1 Binary Classification Task
 
-1. **Individual Skill Gap ($G_i$):**
-   $$G_i = \max(0, R_i - S_i)$$
-   *Ensures that proficiencies exceeding requirements do not penalize the candidate.*
+| Attribute | Value |
+|:---|:---|
+| **Task** | Binary Classification |
+| **Target** | `assessment_pass` (1 = Pass, 0 = Fail) |
+| **Features** | 25 (17 raw skills + 5 composite indices + 3 aggregate stats) |
+| **Dataset** | Kaggle Career Mapping (N=8,528 students, 17 technical disciplines) |
+| **Train/Test Split** | 80% / 20% stratified |
+| **Accuracy Target** | 70–80% (realistic assessment uncertainty) |
 
-2. **Average Skill Gap ($G_{avg}$):**
-   $$G_{avg} = \frac{1}{n} \sum_{i=1}^{n} G_i$$
+### 3.2 Label Engineering
 
-3. **Readiness Percentage:**
-   $$\text{Readiness} = \max\left(0, 100 \times \left(1 - \frac{\sum G_i}{4n}\right)\right)$$
+The Kaggle dataset contains no native pass/fail label. It was engineered as follows:
 
-### Role Benchmark Profiles
+**Step 1 — Core Assessment Score:**
+```
+score = Σ (skill_i × weight_i)       # weighted sum of 6 core skills
+score_norm = score / 6.0             # normalised to [0, 1]
+```
 
-| Target Career Role | Python | SQL | ML | DSA | Git | Web Dev | Cloud | System Design | Stats | Deep Learning |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Machine Learning Engineer** | 4 | 3 | 4 | 4 | 3 | 1 | 3 | 3 | 4 | 4 |
-| **Data Scientist** | 4 | 4 | 4 | 3 | 3 | 1 | 2 | 2 | 5 | 3 |
-| **Full Stack Developer** | 3 | 3 | 1 | 4 | 4 | 5 | 3 | 4 | 2 | 1 |
-| **DevOps Engineer** | 3 | 2 | 1 | 3 | 5 | 2 | 5 | 4 | 2 | 1 |
-| **Data Analyst** | 3 | 5 | 2 | 2 | 2 | 1 | 2 | 1 | 4 | 1 |
+Core skills and weights (sum = 1.0):
+
+| Skill | Weight | Rationale |
+|:---|:---:|:---|
+| `programming_skills` | 0.22 | Most-tested in coding assessments (HackerRank, CodeSignal) |
+| `database_fundamentals` | 0.18 | SQL problems are universal in screening tests |
+| `software_development` | 0.18 | Practical implementation challenges |
+| `troubleshooting_skills` | 0.15 | Debugging and root-cause problems |
+| `software_engineering` | 0.15 | Design and architecture questions |
+| `networking` | 0.12 | Systems and infra conceptual questions |
+
+**Step 2 — Probabilistic Label (Sigmoid + Bernoulli):**
+```
+prob_pass = sigmoid(5 × (score_norm − 0.50))
+assessment_pass ~ Bernoulli(prob_pass)   [seed=42 for reproducibility]
+```
+
+The sigmoid boundary models realistic assessment uncertainty: students near the competency threshold have meaningful variance in outcomes, preventing any classifier from achieving >~85% accuracy.
 
 ---
 
-## 4. Verified Technology Stack & Dependency Pins
+## 4. Dataset Description
 
-The environment is strictly pinned and tested on Python 3.11.9:
+| Property | Value |
+|:---|:---|
+| Source | [Kaggle Career Mapping Dataset](https://github.com/TuhinPatra633/Career-Prediction-Using-Machine-Learning) |
+| Total Records | 8,528 (zero duplicates after cleaning) |
+| Technical Skill Columns | 17 (integer scale 0–6) |
+| Psychometric Columns | 10 (float scale 0.0–1.0) — used in EDA only |
+| Career Role Classes | 16 |
+| Generated Target | `assessment_pass` (binary: 0/1) |
 
-| Package | Version | Purpose |
-| :--- | :---: | :--- |
+### Technical Skill Columns (Model Features)
+`database_fundamentals`, `computer_architecture`, `distributed_computing_systems`,
+`cyber_security`, `networking`, `software_development`, `programming_skills`,
+`project_management`, `computer_forensics_fundamentals`, `technical_communication`,
+`ai_ml`, `software_engineering`, `business_analysis`, `communication_skills`,
+`data_science`, `troubleshooting_skills`, `graphics_designing`
+
+---
+
+## 5. Feature Engineering (25 Features)
+
+| Feature Group | Features | Count |
+|:---|:---|:---:|
+| Raw technical skills | All 17 original skill columns | 17 |
+| Aggregate stats | `technical_overall_mean`, `technical_breadth` (skills≥3), `technical_depth` (skills≥5) | 3 |
+| Domain composites | `ai_data_readiness`, `systems_readiness`, `software_dev_readiness`, `cybersecurity_readiness`, `business_comm_readiness` | 5 |
+| **Total** | | **25** |
+
+> Personality/psychometric columns and `assessment_score` (continuous label proxy) are **excluded** from model features to prevent leakage and maintain fairness.
+
+---
+
+## 6. Models & Expected Performance
+
+| Model | Hyperparameters | Expected Test Accuracy | Notes |
+|:---|:---|:---:|:---|
+| Logistic Regression | C=1.0, solver=lbfgs | ~70–74% | Linear baseline |
+| Decision Tree | max_depth=5, min_leaf=5 | ~72–76% | Interpretable tree |
+| **Random Forest** ⭐ | n_est=100, max_depth=7 | **~75–80%** | Champion model |
+
+Champion selected by highest **ROC-AUC** on the held-out test set.
+
+---
+
+## 7. Tools & Technology Stack
+
+| Tool | Version | Role in Pipeline |
+|:---|:---:|:---|
 | **Python** | 3.11.9 | Core runtime |
-| **NumPy** | 1.26.4 | Numerical arrays & vector math |
-| **Pandas** | 2.2.3 | Tabular data manipulation & schema validation |
-| **scikit-learn** | 1.5.2 | Preprocessing, classification models, evaluation metrics |
-| **DVC** | 3.59.1 | Data versioning & pipeline orchestration |
-| **MLflow** | 2.17.2 | Experiment tracking, model registry, metric provenance |
-| **PyYAML** | 6.0.2 | Human-readable configuration parsing |
-
-
----
-
-## 5. Dataset Provenance & Characteristics
-
-- **Name:** Technical Skill Development Benchmark Dataset (`data/raw/skills_dataset.csv`)
-- **Version Control:** Managed by DVC via pointer `data/raw/skills_dataset.csv.dvc` (never committed as raw binary to Git)
-- **Cohort Size:** 1,200 records (stratified: exactly 240 samples per target role)
-- **Features (27 raw, 34 engineered):**
-  - **17 Technical Disciplines (0–6 scale):** Database Fundamentals, Computer Architecture, Distributed Systems, Cyber Security, Networking, Software Engineering, Cloud Computing, Web Development, Machine Learning, Data Science, Artificial Intelligence, Competitive Programming, Operating Systems, UI/UX Design, DevOps, Big Data, Testing & QA.
-  - **10 Psychometric & Contextual Metrics (0.0–1.0 scale):** Leadership, Communication, Self-Learning, Teamwork, Problem-Solving, Adaptability, Work Ethic, Analytical Thinking, Innovation, Emotional Intelligence.
-  - **Target Variable:** `target_role` (Multi-class: 16 career paths).
-- **Missing Values:** 0 nulls, 0 duplicate records ($N=8,528$).
-- **Dataset Card:** Formally documented in [reports/dataset_card.md](reports/dataset_card.md)
-- **Validation Notebook:** Thorough diagnostic report in [notebooks/01_dataset_acquisition_validation.ipynb](notebooks/01_dataset_acquisition_validation.ipynb)
-
-
+| **pandas** | 2.2.3 | Data manipulation & validation |
+| **NumPy** | 1.26.4 | Numerical operations, feature computation |
+| **scikit-learn** | 1.5.2 | Decision Tree, Random Forest, Logistic Regression, StandardScaler, metrics |
+| **DVC** | 3.59.1 | Data versioning, reproducible multi-stage pipeline (`dvc repro`) |
+| **MLflow** | 2.17.2 | Experiment tracking, model registry, metric logging |
+| **Pydantic v2** | 2.9.2 | Configuration schema validation (`AppConfig`) |
+| **PyYAML** | 6.0.2 | YAML configuration loading |
+| **Loguru** | 0.7.2 | Structured console logging |
+| **pytest** | 9.1.1 | Automated unit & integration testing (18 tests) |
+| **joblib** | (pinned) | Model serialisation/deserialisation |
+| **pathspec** | 0.12.1 | DVC scmrepo compatibility (Windows) |
+| **Ruff** | (pinned) | Code style linting |
 
 ---
 
-## 6. Project Structure
+## 8. Project Structure
 
 ```
 AI-Technical-Skill-Development-Assistant/
 ├── configs/
-│   └── config.yaml               # Centralized pipeline configuration
+│   └── config.yaml              # Pydantic-validated pipeline configuration
 ├── data/
-│   ├── raw/                      # Managed by DVC
-│   │   ├── skills_dataset.csv    # (Tracked in DVC cache, 8,528 rows)
-│   │   └── skills_dataset.csv.dvc# DVC pointer tracked in Git
+│   ├── raw/
+│   │   ├── skills_dataset.csv           # Kaggle Career Mapping dataset
+│   │   └── skills_dataset.csv.dvc       # DVC tracking pointer
 │   └── processed/
-│       ├── train.parquet         # Leak-free train partition (6,822 rows)
-│       ├── test.parquet          # Leak-free test partition (1,706 rows)
-│       └── feature_metadata.json # Scaler parameters & class mappings
+│       ├── train.parquet                # Scaled training features + assessment_pass
+│       ├── test.parquet                 # Scaled test features + assessment_pass
+│       └── feature_metadata.json        # Scaler params + feature column names
 ├── models/
-│   ├── decision_tree.joblib      # Baseline 1 model artifact (84.0% acc)
-│   ├── random_forest.joblib      # Champion model artifact (100.0% acc)
-│   └── training_summary.json     # MLflow Run IDs and training stats
+│   ├── decision_tree.joblib
+│   ├── random_forest.joblib
+│   ├── logistic_regression.joblib
+│   └── training_summary.json
 ├── notebooks/
-│   ├── 01_dataset_acquisition_validation.ipynb # Member 1: Dataset acquisition & schema validation
-│   ├── 02_eda_feature_engineering.ipynb         # Member 2: EDA & composite feature engineering
-│   ├── 03_baseline_models_evaluation.ipynb      # Member 3: Baseline models & evaluation
-│   └── 04_mlops_reproducibility.ipynb           # Member 4: MLOps audit & reproducibility
+│   ├── 01_dataset_acquisition_validation.ipynb
+│   ├── 02_eda_feature_engineering.ipynb
+│   ├── 03_baseline_models_evaluation.ipynb
+│   └── 04_mlops_reproducibility.ipynb
 ├── reports/
-│   ├── dataset_card.md           # Member 1: Formal benchmark dataset card
-│   ├── metrics.json              # DVC tracked metrics
-│   └── phase1_evaluation.md      # Detailed evaluation report
+│   ├── metrics.json                     # DVC-tracked binary evaluation metrics
+│   └── phase1_rework_evaluation.md      # Comprehensive evaluation report
 ├── src/
-│   ├── __init__.py
-│   ├── config.py                 # Pydantic configuration loader
-│   ├── data_loader.py            # Data ingestion & schema validation
-│   ├── preprocess.py             # Skill-gap formulas & leak-free split
-│   ├── feature_engineering.py    # Domain composite scores & scalers
-│   ├── train.py                  # MLflow experiment training
-│   └── evaluate.py               # Comprehensive metric reporting
+│   ├── config.py                        # Pydantic config schema (AppConfig)
+│   ├── data_loader.py                   # Ingestion, schema validation, ROLE_REQUIREMENTS
+│   ├── preprocess.py                    # AssessmentLabelGenerator + SkillGapAnalyzer
+│   ├── feature_engineering.py           # Composite features + SkillFeaturePipeline
+│   ├── train.py                         # Train DT + RF + LR with MLflow tracking
+│   └── evaluate.py                      # Binary metrics, ROC-AUC, Markdown report
 ├── tests/
-│   ├── test_data_loader.py       # Data loading & schema tests
-│   ├── test_skill_gap.py         # Mathematical gap formula tests
-│   ├── test_feature_engineering.py # Pipeline & transformation tests
-│   └── test_pipeline_and_models.py # Model predictions & evaluation tests
-├── .dvc/                         # DVC configuration and metadata
-├── .dvcignore
-├── .gitignore                    # Robust gitignore (ignores venv, raw data, logs)
-├── .python-version               # Pinned Python version (3.11.9)
-├── dvc.yaml                      # Multi-stage reproducible pipeline
-├── pytest.ini                    # Pytest configuration
-├── requirements.txt              # Pinned dependencies
-├── journey.md                    # Engineering milestone log
-└── README.md
+│   ├── test_data_loader.py
+│   ├── test_feature_engineering.py
+│   ├── test_pipeline_and_models.py
+│   └── test_skill_gap.py
+├── predict.py                           # Real-time CLI inference
+├── dvc.yaml                             # 3-stage DVC pipeline definition
+├── dvc.lock                             # Locked pipeline execution hashes
+├── requirements.txt                     # Pinned dependency manifest
+└── pytest.ini
 ```
 
 ---
 
-## 7. Installation & Quickstart
+## 9. Quick Start
 
-### Step 1: Clone Repository
+### Prerequisites
+- Python 3.11.9, Git, DVC 3.59.1
+
+### Setup
 ```bash
+# 1. Clone the repository
 git clone https://github.com/ShreyasPlays/AI-Technical-Skill-Development-Assistant.git
 cd AI-Technical-Skill-Development-Assistant
-```
 
-### Step 2: Create & Activate Virtual Environment
-```powershell
+# 2. Create virtual environment and install dependencies
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-### Step 3: Install Pinned Dependencies
-```powershell
-pip install --upgrade pip
+.venv\Scripts\activate           # Windows PowerShell
 pip install -r requirements.txt
-```
 
----
-
-## 8. Pipeline Execution (DVC)
-
-The entire workflow from preprocessing to evaluation is captured in `dvc.yaml`:
-
-```powershell
-# Reproduce full pipeline end-to-end
+# 3. Run the full reproducible DVC pipeline
 dvc repro
-```
 
-### Inspect Pipeline Metrics
-```powershell
+# 4. View evaluation metrics
 dvc metrics show
+
+# 5. Launch MLflow UI (optional)
+mlflow ui --backend-store-uri mlruns
+
+# 6. Run automated tests
+pytest
 ```
 
-Output:
+### Real-Time Inference
+```bash
+python predict.py
 ```
-Path                  champion_model            decision_tree.accuracy    decision_tree.f1_macro    random_forest.accuracy    random_forest.f1_macro
-reports\metrics.json  Random Forest Classifier  0.8400                    0.7879                    1.0000                    1.0000
-```
+Enter your 17 skill scores (0–6) interactively. The system predicts **Pass** or **Fail** for the online assessment and optionally shows your skill-gap roadmap for any of 16 career roles.
 
 ---
 
-## 9. MLflow Experiment Tracking
+## 10. MLOps Reproducibility Guarantees
 
-Every model run logs parameters, metrics, and models to MLflow experiment `Technical_Skill_Assistant`.
-
-### Launch the MLflow UI
-```powershell
-mlflow ui --port 5000
-```
-Then open [http://localhost:5000](http://localhost:5000) in your browser to interactively compare runs, view confusion matrices, and review artifact provenance.
-
----
-
-## 10. Phase 1 Evaluation Results
-
-Models were evaluated on a held-out, stratified test set of **1,706 candidate profiles** (20% held-out test split of 8,528 total records) with zero data leakage:
-
-| Model | Test Accuracy | Macro Precision | Macro Recall | Macro F1 | Status |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Decision Tree Classifier** | 84.00% | 0.7772 | 0.8125 | 0.7879 | Baseline |
-| **Random Forest Classifier** | **86.11%** | **0.9669** | **0.8576** | **0.8597** | **Champion Model** |
-
-**Champion Rationale:** Random Forest achieves superior generalization (+2.11% accuracy, +0.0718 macro F1) by aggregating regularized decision trees, mitigating high variance and ensuring balanced predictions across all 16 target career roles.
+| Property | Mechanism |
+|:---|:---|
+| **Data Versioning** | `data/raw/skills_dataset.csv.dvc` — SHA-256 hash tracked by DVC |
+| **Label Reproducibility** | `AssessmentLabelGenerator(seed=42)` — same labels every run |
+| **Zero Leakage** | `StandardScaler` fit on train set only; `assessment_score` and personality columns excluded from features |
+| **Pipeline Reproducibility** | `dvc repro` re-executes only changed stages based on dependency graph |
+| **Experiment Tracking** | MLflow logs params, metrics, dataset SHA-256, model artifacts per run |
+| **Code Quality** | Ruff linting, Pydantic config validation, 18 automated tests |
 
 ---
 
-## 11. Running Automated Tests & Linting
+## 11. Evaluation Metrics (Binary Classification)
 
-Run the full test suite (16 tests across data loading, features, models, and skill gap formulas):
+For each of the 3 models:
 
-```powershell
-pytest -v
-```
-
-Run code formatting and lint verification:
-
-```powershell
-ruff check .
-```
-
----
-
-## 12. Team Members & Contributions
-
-- **Project Lead / Architect:** ShreyasPlays (<shreyas662006@gmail.com>)
-- **Member 1 (Dataset Acquisition & Validation):** Ingestion, schema bounds validation, and DVC raw data versioning (`notebooks/01_dataset_acquisition_validation.ipynb`, `reports/dataset_card.md`).
-- **Member 2 (EDA & Feature Engineering):** Exploratory data analysis, 6 composite domain indices, and leakage-free pipeline (`notebooks/02_eda_feature_engineering.ipynb`, `src/feature_engineering.py`).
-- **Member 3 (Baseline Models & Evaluation):** Decision Tree and Random Forest training, MLflow tracking, champion selection, and interactive CLI diagnostic (`notebooks/03_baseline_models_evaluation.ipynb`, `src/train.py`, `src/evaluate.py`, `predict.py`).
-- **Member 4 (MLOps Integration & Reproducibility):** Git/DVC/MLflow audit, pipeline reproduction, shared contribution tracker, automated test verification, and reproducibility notebook (`notebooks/04_mlops_reproducibility.ipynb`).
-
-- **Project:** Engineering College Project Review — Phase 1: Development & Reproducibility
-- **Review Window:** 13–17 October 2026 | **Final Submission:** 16 October 2026
-- **License:** MIT License
+| Metric | Description |
+|:---|:---|
+| **Accuracy** | Overall fraction of correct Pass/Fail predictions |
+| **Precision** | Of predicted Pass, how many actually pass |
+| **Recall** | Of actual Pass students, how many were correctly predicted |
+| **F1-Score** | Harmonic mean of Precision and Recall |
+| **ROC-AUC** | Area under the ROC curve — discrimination ability across all thresholds |
+| **Confusion Matrix** | 2×2: TN / FP / FN / TP |

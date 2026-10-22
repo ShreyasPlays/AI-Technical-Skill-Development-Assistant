@@ -1,4 +1,4 @@
-"""Unit tests for dataset loading, validation, and ingestion."""
+"""Unit tests for dataset loading, validation, ingestion, and label engineering constants."""
 
 from pathlib import Path
 import pytest
@@ -9,6 +9,8 @@ from src.data_loader import (
     SKILL_COLUMNS,
     CONTEXT_COLUMNS,
     ROLE_CLASSES,
+    CORE_ASSESSMENT_WEIGHTS,
+    ROLE_REQUIREMENTS,
     load_raw_data,
 )
 
@@ -18,9 +20,40 @@ def test_config_loading():
     cfg = load_config()
     assert cfg.project_name == "AI-Technical-Skill-Development-Assistant"
     assert cfg.data.random_state == 42
+    assert cfg.data.target_column == "assessment_pass"
+    assert 0.0 < cfg.data.assessment_threshold < 1.0
     assert len(cfg.roles) == 16
     assert "AI ML Specialist" in cfg.roles
     assert "Software Developer" in cfg.roles
+
+
+def test_core_assessment_weights_sum_to_one():
+    """Verify CORE_ASSESSMENT_WEIGHTS are well-defined and sum to 1.0."""
+    assert len(CORE_ASSESSMENT_WEIGHTS) == 6
+    total_weight = sum(CORE_ASSESSMENT_WEIGHTS.values())
+    assert abs(total_weight - 1.0) < 1e-9, (
+        f"Weights must sum to 1.0 for a valid weighted mean. Got: {total_weight}"
+    )
+    for skill in CORE_ASSESSMENT_WEIGHTS:
+        assert skill in SKILL_COLUMNS, (
+            f"Core assessment skill '{skill}' is not in the 17 SKILL_COLUMNS list."
+        )
+
+
+def test_role_requirements_coverage():
+    """Verify all 16 career roles are represented in ROLE_REQUIREMENTS."""
+    assert len(ROLE_REQUIREMENTS) == 16
+    for role in ROLE_CLASSES:
+        assert role in ROLE_REQUIREMENTS, f"Role '{role}' missing from ROLE_REQUIREMENTS."
+    # All requirement values must be valid (1-6)
+    for role, reqs in ROLE_REQUIREMENTS.items():
+        for skill, level in reqs.items():
+            assert 1 <= level <= 6, (
+                f"Requirement for '{skill}' in '{role}' must be 1-6. Got: {level}"
+            )
+            assert skill in SKILL_COLUMNS, (
+                f"Required skill '{skill}' in '{role}' is not in SKILL_COLUMNS."
+            )
 
 
 def test_dataset_loading():
@@ -90,7 +123,11 @@ def test_duplicate_columns_validation(tmp_path: Path):
     """Verify duplicate column names in CSV raise validation error."""
     cols = SKILL_COLUMNS + CONTEXT_COLUMNS + ["target_role", "programming_skills"]
     csv_header = ",".join(cols) + "\n"
-    csv_row = ",".join(["3"] * len(SKILL_COLUMNS) + ["0.5"] * len(CONTEXT_COLUMNS) + ["Software Developer", "3"]) + "\n"
+    csv_row = ",".join(
+        ["3"] * len(SKILL_COLUMNS)
+        + ["0.5"] * len(CONTEXT_COLUMNS)
+        + ["Software Developer", "3"]
+    ) + "\n"
 
     bad_csv = tmp_path / "dup_cols.csv"
     bad_csv.write_text(csv_header + csv_row, encoding="utf-8")

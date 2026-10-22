@@ -21,6 +21,7 @@ stages:
     outs:
       - models/decision_tree.joblib
       - models/random_forest.joblib
+      - models/logistic_regression.joblib
       - models/training_summary.json
 
   evaluate:
@@ -30,11 +31,12 @@ stages:
       - data/processed/feature_metadata.json
       - models/decision_tree.joblib
       - models/random_forest.joblib
+      - models/logistic_regression.joblib
       - src/evaluate.py
       - configs/config.yaml
     metrics:
       - reports/metrics.json:
           cache: false
     outs:
-      - reports/phase1_evaluation.md:
+      - reports/phase1_rework_evaluation.md:
           cache: false

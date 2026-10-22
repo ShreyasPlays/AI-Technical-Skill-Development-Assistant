@@ -1,5 +1,5 @@
 project_name: "AI-Technical-Skill-Development-Assistant"
-version: "1.0.0"
+version: "2.0.0"
 
 paths:
   raw_data_path: "data/raw/skills_dataset.csv"
@@ -9,13 +9,14 @@ paths:
   models_dir: "models"
   reports_dir: "reports"
   metrics_path: "reports/metrics.json"
-  evaluation_report_path: "reports/phase1_evaluation.md"
+  evaluation_report_path: "reports/phase1_rework_evaluation.md"
 
 data:
   test_size: 0.2
   random_state: 42
   stratify: true
-  target_column: "target_role"
+  target_column: "assessment_pass"
+  assessment_threshold: 0.50
   skill_features:
     - "database_fundamentals"
     - "computer_architecture"
@@ -46,6 +47,8 @@ data:
     - "self_enhancement"
     - "self_transcendence"
 
+# Role-specific skill requirements used by the SkillGapAnalyzer for
+# personalised learning roadmap generation in predict.py.
 roles:
   AI ML Specialist:
     ai_ml: 5
@@ -131,22 +134,33 @@ roles:
     technical_communication: 4
     troubleshooting_skills: 3
 
+# -----------------------------------------------------------------------
+# Model hyperparameters — intentionally constrained to target 70-80%
+# test accuracy for the binary assessment pass/fail classifier.
+# -----------------------------------------------------------------------
 models:
   random_state: 42
+
   decision_tree:
-    max_depth: 12
-    min_samples_split: 5
-    min_samples_leaf: 2
+    max_depth: 5          # constrained depth prevents overfitting
+    min_samples_split: 10
+    min_samples_leaf: 5
     criterion: "gini"
+
   random_forest:
-    n_estimators: 72
-    max_depth: 2
-    max_features: 2
-    min_samples_split: 4
-    min_samples_leaf: 2
+    n_estimators: 100
+    max_depth: 7          # ensemble regularised — champion model
+    max_features: "sqrt"
+    min_samples_split: 8
+    min_samples_leaf: 4
     criterion: "gini"
     n_jobs: -1
 
+  logistic_regression:
+    C: 1.0                # moderate L2 regularisation
+    max_iter: 1000
+    solver: "lbfgs"
+
 mlflow:
-  experiment_name: "Technical_Skill_Assistant"
+  experiment_name: "Assessment_Pass_Predictor"
   tracking_uri: "mlruns"

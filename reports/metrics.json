@@ -1,17 +1,24 @@
 {
   "decision_tree": {
-    "accuracy": 0.84,
-    "precision_macro": 0.7772,
-    "recall_macro": 0.8125,
-    "f1_macro": 0.7879,
-    "f1_weighted": 0.7914
+    "accuracy": 0.7204,
+    "precision": 0.7238,
+    "recall": 0.6344,
+    "f1_score": 0.6762,
+    "roc_auc": 0.7885
   },
   "random_forest": {
-    "accuracy": 0.8611,
-    "precision_macro": 0.9669,
-    "recall_macro": 0.8576,
-    "f1_macro": 0.8597,
-    "f1_weighted": 0.8394
+    "accuracy": 0.7351,
+    "precision": 0.7211,
+    "recall": 0.6917,
+    "f1_score": 0.7061,
+    "roc_auc": 0.7949
   },
-  "champion_model": "Random Forest Classifier"
+  "logistic_regression": {
+    "accuracy": 0.7345,
+    "precision": 0.7117,
+    "recall": 0.7108,
+    "f1_score": 0.7113,
+    "roc_auc": 0.7974
+  },
+  "champion_model": "Random Forest"
 }
