@@ -1,0 +1,372 @@
+# Learning Resources & Improvement Roadmaps for 17 Technical Attributes
+# AI-Based Technical Skill Development Assistant
+
+database_fundamentals:
+  title: "Database Fundamentals"
+  core_topics:
+    - "Relational Schema Design & Normalization (1NF to BCNF)"
+    - "SQL DDL, DML, Window Functions & CTEs"
+    - "Indexing Strategies (B-Trees, Hash, Composite Indexes)"
+    - "Transaction Management & ACID Properties (Concurrency, Isolation Levels)"
+    - "NoSQL Basics (Key-Value, Document, Column-family)"
+  resources:
+    - name: "SQLBolt - Interactive SQL Lessons"
+      url: "https://sqlbolt.com/"
+      type: "Interactive Tutorial"
+    - name: "CMU 15-445/645 Intro to Database Systems"
+      url: "https://15445.courses.cs.cmu.edu/"
+      type: "University Lecture Course"
+    - name: "Use The Index, Luke (SQL Indexing Guide)"
+      url: "https://use-the-index-luke.com/"
+      type: "Reading / Reference"
+  practice:
+    - "LeetCode SQL 50 Study Plan"
+    - "HackerRank SQL Practice (Advanced Joins & Aggregations)"
+  project: "Build an inventory management CLI backed by SQLite/PostgreSQL with indexed queries & transaction rollbacks."
+
+computer_architecture:
+  title: "Computer Architecture"
+  core_topics:
+    - "Von Neumann Architecture & CPU Execution Cycle (Fetch-Decode-Execute)"
+    - "Memory Hierarchy, Cache Levels (L1/L2/L3), Cache Locality & Coherence"
+    - "Pipelining, Hazards, Branch Prediction & Out-of-Order Execution"
+    - "Instruction Set Architecture (RISC-V vs x86-64)"
+    - "Virtual Memory, Paging, TLB & Memory Management Unit (MMU)"
+  resources:
+    - name: "Crash Course Computer Science (PBS)"
+      url: "https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"
+      type: "Video Series"
+    - name: "Nand2Tetris: Building a Modern Computer from First Principles"
+      url: "https://www.nand2tetris.org/"
+      type: "Course & Simulator"
+    - name: "Computer Systems: A Programmer's Perspective (CS:APP)"
+      url: "https://csapp.cs.cmu.edu/"
+      type: "Textbook / Reference"
+  practice:
+    - "Implement an 8-bit or 16-bit CPU emulator in Python/C"
+    - "Cache hit/miss simulation exercises in C"
+  project: "Design a RISC-V assembly simulator or a cache memory access visualizer."
+
+distributed_computing_systems:
+  title: "Distributed Computing Systems"
+  core_topics:
+    - "CAP Theorem & PACELC Theorem"
+    - "Consensus Algorithms (Paxos, Raft, Byzantine Fault Tolerance)"
+    - "Distributed Storage (Partitioning, Replication, Consistent Hashing)"
+    - "Message Queues & Event Streaming (Kafka, RabbitMQ, RPC vs gRPC)"
+    - "Microservice Architecture, Load Balancing & Service Discovery"
+  resources:
+    - name: "MIT 6.824: Distributed Systems (Robert Morris)"
+      url: "https://pdos.csail.mit.edu/6.824/"
+      type: "University Course"
+    - name: "Designing Data-Intensive Applications (Martin Kleppmann)"
+      url: "https://dataintensive.net/"
+      type: "Essential Textbook"
+    - name: "Raft Consensus Algorithm Interactive Visualization"
+      url: "https://raft.github.io/"
+      type: "Interactive Tool"
+  practice:
+    - "Build a 3-node distributed Key-Value store with leader election"
+    - "Implement consistent hashing ring in Python"
+  project: "Develop a mini distributed log service or chat cluster with failover replication."
+
+cyber_security:
+  title: "Cyber Security"
+  core_topics:
+    - "CIA Triad, Threat Modeling & Security Principles"
+    - "OWASP Top 10 Web Vulnerabilities (SQLi, XSS, CSRF, SSRF, Auth Bypass)"
+    - "Cryptography Basics (Symmetric, Asymmetric, Hashing, TLS/SSL Certificates)"
+    - "Network Security, Firewalls, Port Scanning & IDS/IPS"
+    - "Authentication & Authorization (OAuth 2.0, JWT, RBAC, Multi-Factor)"
+  resources:
+    - name: "PortSwigger Web Security Academy"
+      url: "https://portswigger.net/web-security"
+      type: "Hands-on Lab"
+    - name: "OWASP Top 10 Security Guide"
+      url: "https://owasp.org/www-project-top-ten/"
+      type: "Standard Guidelines"
+    - name: "OverTheWire: Bandit Wargames"
+      url: "https://overthewire.org/wargames/bandit/"
+      type: "Linux & Security Challenges"
+  practice:
+    - "PortSwigger SQLi & XSS practitioner labs"
+    - "TryHackMe Pre-Security & Complete Beginner paths"
+  project: "Build a secure authentication service implementing Argon2 password hashing, rate limiting, and JWT rotation."
+
+networking:
+  title: "Networking"
+  core_topics:
+    - "OSI 7-Layer Model vs TCP/IP 4-Layer Model"
+    - "IP Addressing, CIDR, Subnetting, IPv4 vs IPv6"
+    - "Transport Protocols: TCP (Handshake, Flow/Congestion Control) vs UDP"
+    - "Application Layer: HTTP/1.1, HTTP/2, HTTP/3, WebSockets, DNS, DHCP"
+    - "Routing Algorithms (OSPF, BGP) & Network Address Translation (NAT)"
+  resources:
+    - name: "Beej's Guide to Network Programming (Using Internet Sockets)"
+      url: "https://beej.us/guide/bgnet/"
+      type: "Hands-on Guide"
+    - name: "Computer Networking: A Top-Down Approach (Kurose & Ross)"
+      url: "https://gaia.cs.umass.edu/kurose_ross/online_lectures.htm"
+      type: "Textbook & Lectures"
+    - name: "Wireshark Packet Analysis Practice Labs"
+      url: "https://www.wireshark.org/"
+      type: "Analysis Tool"
+  practice:
+    - "Analyze TCP 3-way handshake and DNS resolution captures in Wireshark"
+    - "Calculate subnets and routing masks from scratch"
+  project: "Build a multi-threaded HTTP/1.1 web server from scratch using raw sockets."
+
+software_development:
+  title: "Software Development"
+  core_topics:
+    - "Modern Version Control (Git branching, rebasing, pull request workflows)"
+    - "Clean Code, Refactoring & Code Smells"
+    - "API Design (RESTful conventions, status codes, OpenAPI/Swagger)"
+    - "Automated Testing (Unit, Integration, End-to-End with pytest/jest)"
+    - "CI/CD Pipelines (GitHub Actions, containerization with Docker)"
+  resources:
+    - name: "The Missing Semester of Your CS Education (MIT)"
+      url: "https://missing.csail.mit.edu/"
+      type: "Developer Tools Course"
+    - name: "Refactoring.Guru: Refactoring & Design Patterns"
+      url: "https://refactoring.guru/"
+      type: "Illustrated Guide"
+    - name: "Git Immersion"
+      url: "https://gitimmersion.com/"
+      type: "Interactive Git Tutorial"
+  practice:
+    - "Containerize a full-stack app with Docker Compose"
+    - "Write automated CI workflow with linting and coverage checks on GitHub Actions"
+  project: "Build a production-ready REST API with CRUD operations, automated test suite, Dockerfile, and CI pipeline."
+
+programming_skills:
+  title: "Programming Skills (Data Structures & Algorithms)"
+  core_topics:
+    - "Time & Space Complexity Analysis (Big-O Notation)"
+    - "Fundamental Data Structures: Arrays, Hash Tables, Stacks, Queues, Linked Lists"
+    - "Trees & Graphs: BST, Heap, Trie, DFS/BFS Traversals, Topological Sort"
+    - "Algorithmic Techniques: Binary Search, Two Pointers, Sliding Window, Backtracking"
+    - "Dynamic Programming: Memoization, Tabulation, Knapsack, Longest Common Subsequence"
+  resources:
+    - name: "NeetCode Roadmap & 150 Core Problems"
+      url: "https://neetcode.io/roadmap"
+      type: "DSA Study Roadmap"
+    - name: "LeetCode Explore: Data Structures & Algorithms"
+      url: "https://leetcode.com/explore/"
+      type: "Interactive Coding Platform"
+    - name: "MIT 6.006: Introduction to Algorithms"
+      url: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/"
+      type: "University Lectures"
+  practice:
+    - "Solve NeetCode Blind 75 / Top Interview 150 questions"
+    - "Participate in weekly LeetCode / Codeforces algorithmic contests"
+  project: "Implement custom data structures library (Red-Black Tree, Min-Heap, Graph shortest path) with comprehensive unit tests."
+
+project_management:
+  title: "Project Management"
+  core_topics:
+    - "Agile & Scrum Methodologies (Sprints, Epics, User Stories, Retrospectives)"
+    - "Work Breakdown Structure (WBS) & Estimation (Story Points, Planning Poker)"
+    - "Risk Management, Issue Tracking & Mitigation Strategies"
+    - "Project Management Tools (Jira, Linear, Trello, GitHub Projects)"
+    - "KPIs: Sprint Velocity, Burn-down / Burn-up Charts, Delivery Milestones"
+  resources:
+    - name: "Atlassian Agile Coach"
+      url: "https://www.atlassian.com/agile"
+      type: "Comprehensive Agile Guide"
+    - name: "Scrum Guide (Ken Schwaber & Jeff Sutherland)"
+      url: "https://scrumguides.org/"
+      type: "Official Standard"
+  practice:
+    - "Set up a GitHub Projects / Jira Kanban board with epics, sprint backlog, and acceptance criteria"
+    - "Draft an Agile sprint plan with story point estimates for a 4-week student team project"
+  project: "Create an open-source project management blueprint repository with PR templates, issue boards, and release milestones."
+
+computer_forensics_fundamentals:
+  title: "Computer Forensics Fundamentals"
+  core_topics:
+    - "Digital Evidence Handling, Chain of Custody & Legal Admissibility"
+    - "Disk Imaging, File System Analysis (NTFS, FAT32, ext4, MFT, Inodes)"
+    - "Memory Forensics (Volatility Framework, Process Dumps, DLL Injection)"
+    - "Network Artifact Analysis (PCAP inspection, Event Log Corroboration)"
+    - "Steganography, File Carving & Deleted Data Recovery"
+  resources:
+    - name: "Autopsy Digital Forensics Basics"
+      url: "https://www.autopsy.com/"
+      type: "Open-source Forensic Platform"
+    - name: "SANS DFIR Community Resources"
+      url: "https://www.sans.org/cyber-security-summit/archives/"
+      type: "Industry Case Studies"
+  practice:
+    - "Analyze a memory dump using Volatility to identify rogue processes"
+    - "Inspect an evidence disk image using Autopsy to recover deleted files"
+  project: "Write a digital artifact parser in Python to extract Windows Event Logs and browser history timestamps."
+
+technical_communication:
+  title: "Technical Communication"
+  core_topics:
+    - "Technical Writing Principles (Clarity, Conciseness, Precision, Audience Targeting)"
+    - "Architecture Decision Records (ADRs) & System Design Proposals (RFCs)"
+    - "API Documentation (OpenAPI, Postman collections, Markdown guides)"
+    - "Release Notes, Changelogs & User Manuals"
+    - "Effective Code Reviews & Constructive Feedback"
+  resources:
+    - name: "Google Technical Writing Courses (Technical Writing One & Two)"
+      url: "https://developers.google.com/tech-writing"
+      type: "Self-Paced Course"
+    - name: "Writing Good Documentation (Write the Docs)"
+      url: "https://www.writethedocs.org/guide/"
+      type: "Best Practice Guidelines"
+  practice:
+    - "Write an Architecture Decision Record (ADR) justifying model choices"
+    - "Produce complete Swagger/OpenAPI documentation for an existing API"
+  project: "Author a comprehensive developer documentation website using MkDocs / Docusaurus for a software library."
+
+ai_ml:
+  title: "AI / Machine Learning"
+  core_topics:
+    - "Supervised Learning (Regression, Decision Trees, Ensembles, SVMs)"
+    - "Unsupervised Learning (K-Means, Hierarchical Clustering, PCA)"
+    - "Model Evaluation (Confusion Matrix, Precision/Recall, ROC-AUC, Log-Loss)"
+    - "Hyperparameter Tuning, Cross-Validation & Regularization (L1/L2)"
+    - "Deep Learning Foundations (Neural Networks, Backpropagation, PyTorch basics)"
+  resources:
+    - name: "Machine Learning Specialization (Andrew Ng / DeepLearning.AI)"
+      url: "https://www.deeplearning.ai/courses/machine-learning-specialization/"
+      type: "Core Certification Course"
+    - name: "Fast.ai: Practical Deep Learning for Coders"
+      url: "https://course.fast.ai/"
+      type: "Practical Code-First Course"
+    - name: "Scikit-Learn Official User Guide"
+      url: "https://scikit-learn.org/stable/user_guide.html"
+      type: "Documentation & Examples"
+  practice:
+    - "Build end-to-end classification pipeline with Cross-Validation and GridSearch"
+    - "Kaggle Competitions (Titanic, Housing Prices, Playground series)"
+  project: "Train and deploy a scikit-learn classifier with MLflow tracking and FastAPI endpoint."
+
+software_engineering:
+  title: "Software Engineering"
+  core_topics:
+    - "SOLID Object-Oriented Design Principles"
+    - "Design Patterns (Factory, Singleton, Observer, Strategy, Adapter)"
+    - "Software Development Life Cycle (SDLC) Models"
+    - "Modular Architecture & Separation of Concerns"
+    - "Code Maintainability, Technical Debt & Refactoring Metrics"
+  resources:
+    - name: "Design Patterns: Elements of Reusable Object-Oriented Software (GoF)"
+      url: "https://refactoring.guru/design-patterns"
+      type: "Visual Guide"
+    - name: "Clean Architecture (Robert C. Martin)"
+      url: "https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html"
+      type: "Architectural Pattern"
+  practice:
+    - "Refactor a monolithic script into a clean layered architecture"
+    - "Implement 4 classic GoF design patterns to solve real coding problems"
+  project: "Architect a modular payment or notification processing framework applying Strategy and Observer patterns."
+
+business_analysis:
+  title: "Business Analysis"
+  core_topics:
+    - "Requirements Gathering, Elicitation & Stakeholder Interviews"
+    - "Functional vs Non-Functional Requirements Specification (SRS)"
+    - "Business Process Modeling (BPMN diagrams, Flowcharts, Swimlane)"
+    - "Gap Analysis, SWOT Analysis & Cost-Benefit Feasibility"
+    - "Data-Driven Business Metrics (ROI, Churn, Conversion, CAC/LTV)"
+  resources:
+    - name: "IIBA BABOK Guide (Business Analysis Body of Knowledge)"
+      url: "https://www.iiba.org/"
+      type: "Professional Standard"
+    - name: "Harvard Business School Business Analytics Course Notes"
+      url: "https://online.hbs.edu/courses/business-analytics/"
+      type: "Course Material"
+  practice:
+    - "Create a complete BPMN workflow diagram for an e-commerce order process"
+    - "Draft a Business Requirements Document (BRD) for a skill assessment tool"
+  project: "Conduct a comprehensive gap analysis report analyzing student placement rates vs curriculum technical requirements."
+
+communication_skills:
+  title: "Communication Skills"
+  core_topics:
+    - "Interview Communication: STAR Method (Situation, Task, Action, Result)"
+    - "Presenting Technical Ideas to Non-Technical Audiences"
+    - "Active Listening & Question Asking Strategies"
+    - "Negotiation, Conflict Resolution & Cross-Functional Teamwork"
+    - "Executive Summary & Slide Deck Preparation"
+  resources:
+    - name: "Stanford Graduate School of Business: Think Fast, Talk Smart"
+      url: "https://www.youtube.com/watch?v=HAnw168huqA"
+      type: "Public Speaking Lecture"
+    - name: "The STAR Method for Behavioral Interviews (MIT Career Center)"
+      url: "https://capd.mit.edu/resources/the-star-method-for-behavioral-interviews/"
+      type: "Career Guide"
+  practice:
+    - "Prepare 5 STAR responses for common behavioral interview questions"
+    - "Deliver a 3-minute lightning pitch explaining an ML project to a non-technical peer"
+  project: "Record a mock behavioral interview video and self-evaluate against a structured communication rubric."
+
+data_science:
+  title: "Data Science"
+  core_topics:
+    - "Exploratory Data Analysis (EDA) & Summary Statistics"
+    - "Data Cleaning, Imputation & Feature Scaling"
+    - "Data Wrangling with Pandas & NumPy"
+    - "Statistical Hypothesis Testing (t-test, ANOVA, Chi-Square, p-values)"
+    - "Data Visualization (Seaborn, Matplotlib, Plotly dashboards)"
+  resources:
+    - name: "Python for Data Analysis (Wes McKinney / Creator of Pandas)"
+      url: "https://wesmckinney.com/book/"
+      type: "Comprehensive Book"
+    - name: "StatQuest with Josh Starmer"
+      url: "https://statquest.org/"
+      type: "Video Series"
+    - name: "Kaggle Learn: Data Cleaning & Pandas Micro-Courses"
+      url: "https://www.kaggle.com/learn"
+      type: "Interactive Exercises"
+  practice:
+    - "Perform comprehensive EDA on a raw Kaggle dataset with distribution plots and correlation heatmaps"
+    - "Run A/B testing statistical significance calculations in Python"
+  project: "Build an interactive Streamlit analytics dashboard analyzing student academic performance and placement trends."
+
+troubleshooting_skills:
+  title: "Troubleshooting Skills"
+  core_topics:
+    - "Systematic Root Cause Analysis (5 Whys, Ishikawa Fishbone Diagram)"
+    - "Debugging Tools (gdb, pdb, Chrome DevTools, strace, lsof)"
+    - "Log Analysis, Log Aggregation & Exception Stack Trace Deconstruction"
+    - "Binary Search Debugging (git bisect to isolate faulty commits)"
+    - "Performance Profiling (Memory Leaks, CPU Bottlenecks, cProfile)"
+  resources:
+    - name: "Debugging: The 9 Indispensable Rules for Finding Even the Most Elusive Software Bugs"
+      url: "https://www.debuggingrules.com/"
+      type: "Foundational Book"
+    - name: "Python pdb Debugger Tutorial"
+      url: "https://realpython.com/python-debugging-pdb/"
+      type: "Hands-on Guide"
+  practice:
+    - "Use git bisect to pinpoint a breaking bug across a commit history"
+    - "Profile a slow Python algorithm using cProfile and snakeviz to optimize bottlenecks"
+  project: "Create a reproducible debugging lab repository demonstrating common concurrency and memory leak bugs with fix walkthroughs."
+
+graphics_designing:
+  title: "Graphics Designing & UI/UX"
+  core_topics:
+    - "Design Systems, Visual Hierarchy, Typography & Color Theory"
+    - "Wireframing & Prototyping (Figma, Sketch)"
+    - "Responsive Design & CSS Flexbox / Grid Layouts"
+    - "Accessibility Standards (WCAG 2.1, Color Contrast, Screen Reader semantics)"
+    - "Usability Testing & User-Centric Design Principles"
+  resources:
+    - name: "Refactoring UI (Adam Wathan & Steve Schoger)"
+      url: "https://www.refactoringui.com/"
+      type: "UI Design Guide"
+    - name: "Google UX Design Professional Certificate"
+      url: "https://www.coursera.org/professional-certificates/google-ux-design"
+      type: "Professional Certificate"
+    - name: "Figma Community Tutorials & Component Libraries"
+      url: "https://www.figma.com/community"
+      type: "Interactive Templates"
+  practice:
+    - "Design a high-fidelity interactive dashboard mockup in Figma"
+    - "Audit a web application for WCAG accessibility compliance using Lighthouse"
+  project: "Create a design system component library in Figma and code responsive UI components in HTML/CSS."

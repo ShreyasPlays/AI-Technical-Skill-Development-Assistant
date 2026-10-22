@@ -29,6 +29,7 @@ from src.config import load_config
 from src.data_loader import SKILL_COLUMNS, ROLE_REQUIREMENTS
 from src.feature_engineering import engineer_composite_features
 from src.preprocess import SkillGapAnalyzer
+from src.roadmap import RoadmapGenerator
 
 
 # -----------------------------------------------------------------------
@@ -207,10 +208,30 @@ def main(config_path: str = "configs/config.yaml"):
         prob_str = f"{vote_info['pass_probability']*100:.1f}%" if vote_info["pass_probability"] else "N/A"
         print(f"    {model_name:<25} →  {vote_label}  ({prob_str} pass confidence)")
 
-    print("\n" + "─" * 70)
+    roadmap_gen = RoadmapGenerator()
+
+    # ── If predicted Fail or borderline, display assessment acceleration roadmap
+    if pred == 0 or prob < 0.60:
+        print("\n  💡  RECOMMENDED ASSESSMENT ACCELERATION ROADMAP:")
+        print("  To cross the 50% passing threshold for the interview round,")
+        print("  prioritize closing these core assessment competency gaps:\n")
+        assess_roadmap = roadmap_gen.generate_assessment_roadmap(skill_scores, target_score_level=4)
+        for i, area in enumerate(assess_roadmap["priority_areas"][:3], 1):
+            res_info = area["resource_info"]
+            print(f"  {i}. {area['title']} (Current: {area['current']}/6 → Target: {area['target']}/6 | Gap: {area['gap']})")
+            if res_info.get("resources"):
+                top_res = res_info["resources"][0]
+                print(f"     • Curated Resource: {top_res['name']} ({top_res.get('url', '')})")
+            if res_info.get("practice"):
+                print(f"     • Practice Track:   {res_info['practice'][0]}")
+            if res_info.get("project"):
+                print(f"     • Mini-Project:     {res_info['project']}")
+            print()
+
+    print("─" * 70)
 
     # ── Optional skill gap analysis ─────────────────────────────────────
-    print("\n  Would you like a personalised skill-gap roadmap for a target role?")
+    print("\n  Would you like a personalized multi-week learning roadmap for a target role?")
     roles = sorted(ROLE_REQUIREMENTS.keys())
     for i, role in enumerate(roles, 1):
         print(f"    {i:2d}. {role}")
@@ -232,10 +253,18 @@ def main(config_path: str = "configs/config.yaml"):
                 print(f"  Role Readiness     : {gap_result['readiness_percentage']}%")
                 print(f"  Average Skill Gap  : {gap_result['average_skill_gap']} points")
 
-                if gap_result["actionable_recommendations"]:
-                    print("\n  Priority Learning Areas:")
-                    for i, rec in enumerate(gap_result["actionable_recommendations"], 1):
-                        print(f"    {i}. {rec}")
+                role_roadmap = roadmap_gen.generate_role_roadmap(skill_scores, target_role)
+
+                if role_roadmap["priority_areas"]:
+                    print("\n  🚀  Structured Multi-Week Learning Sprints:")
+                    for sprint in role_roadmap["sprints"]:
+                        print(f"\n  [Week {sprint['week']}] {sprint['focus_area']}")
+                        print(f"    • Core Topics : {', '.join(sprint['key_topics'])}")
+                        print(f"    • Practice    : {', '.join(sprint['practice_targets'])}")
+                        if sprint.get("recommended_resources"):
+                            r = sprint["recommended_resources"][0]
+                            print(f"    • Resource    : {r['name']} ({r.get('url', '')})")
+                        print(f"    • Deliverable : {sprint['milestone_deliverable']}")
                 else:
                     print("\n  🎉  You already meet all requirements for this role!")
                 break
