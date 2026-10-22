@@ -179,13 +179,13 @@ Champion selected by highest **ROC-AUC** on the held-out test set.
 | **scikit-learn** | 1.5.2 | Decision Tree, Random Forest, Logistic Regression, StandardScaler, metrics |
 | **DVC** | 3.59.1 | Data versioning, reproducible multi-stage pipeline (`dvc repro`) |
 | **MLflow** | 2.17.2 | Experiment tracking, model registry, metric logging |
-| **Pydantic v2** | 2.9.2 | Configuration schema validation (`AppConfig`) |
+
 | **PyYAML** | 6.0.2 | YAML configuration loading |
-| **Loguru** | 0.7.2 | Structured console logging |
+
 | **pytest** | 9.1.1 | Automated unit & integration testing (18 tests) |
-| **joblib** | (pinned) | Model serialisation/deserialisation |
+
 | **pathspec** | 0.12.1 | DVC scmrepo compatibility (Windows) |
-| **Ruff** | (pinned) | Code style linting |
+
 
 ---
 
