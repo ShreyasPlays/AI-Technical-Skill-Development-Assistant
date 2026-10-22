@@ -280,6 +280,37 @@ def run_evaluation(config: Optional[AppConfig] = None) -> Dict[str, Any]:
         with open(summary_path) as f:
             summary = json.load(f)
 
+    # Generate Markdown report
+    generate_evaluation_report(
+        eval_results=eval_results,
+        report_path=config.paths.evaluation_report_path,
+        champion_model=champion_name,
+        n_test=len(y_test),
+    )
+
+    pipeline_dag_text = """# MLOps End-to-End Pipeline DAG
+
+## Pipeline Architecture
+```mermaid
+flowchart TD
+    A["Raw Mendeley Dataset (skills_dataset.csv)"] --> B["Stage 1: Preprocess & Label Engineering"]
+    B --> C["Train Split (80% - 6,822 samples)"]
+    B --> D["Test Split (20% - 1,706 samples, Zero Leakage)"]
+    C --> E["Stage 2: Feature Engineering (25 Features)"]
+    E --> F["Stage 3: Multi-Model Training (DT, RF, LR)"]
+    F --> G["Models (decision_tree, random_forest, logistic_regression)"]
+    G --> H["Stage 4: Evaluation & MLflow Metric Logging"]
+    D --> H
+    H --> I["Reports (metrics.json & phase1_rework_evaluation.md)"]
+    H --> J["MLflow Tracking & Champion Selection"]
+```
+
+## DVC Pipeline Stages
+1. **preprocess**: Ingestion, schema validation, probabilistic binary label engineering (`assessment_pass`), 80/20 stratified split.
+2. **train**: Multi-model training (Decision Tree, Random Forest, Logistic Regression), MLflow parameter/metric tracking.
+3. **evaluate**: Zero-leakage testing on held-out test set (1,706 samples), ROC-AUC comparison, champion model selection.
+"""
+
     metric_map = {
         "decision_tree": ("DT_Eval", summary.get("decision_tree", {}).get("run_id")),
         "random_forest": ("RF_Eval", summary.get("random_forest", {}).get("run_id")),
@@ -296,6 +327,11 @@ def run_evaluation(config: Optional[AppConfig] = None) -> Dict[str, Any]:
             mlflow.log_metric("test_f1_score", res["f1_score"])
             if res["roc_auc"] is not None:
                 mlflow.log_metric("test_roc_auc", res["roc_auc"])
+
+            # Log pipeline DAG and evaluation report as artifacts in MLflow
+            mlflow.log_text(pipeline_dag_text, artifact_file="mlops_pipeline_dag.md")
+            if config.paths.evaluation_report_path.exists():
+                mlflow.log_artifact(str(config.paths.evaluation_report_path), artifact_path="evaluation_report")
 
     # Save DVC metrics
     dvc_metrics = {
@@ -314,14 +350,6 @@ def run_evaluation(config: Optional[AppConfig] = None) -> Dict[str, Any]:
     with open(config.paths.metrics_path, "w") as f:
         json.dump(dvc_metrics, f, indent=2)
     logger.success(f"DVC metrics saved to {config.paths.metrics_path}")
-
-    # Generate Markdown report
-    generate_evaluation_report(
-        eval_results=eval_results,
-        report_path=config.paths.evaluation_report_path,
-        champion_model=champion_name,
-        n_test=len(y_test),
-    )
 
     return eval_results
 
