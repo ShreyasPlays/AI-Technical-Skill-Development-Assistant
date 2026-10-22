@@ -87,7 +87,7 @@ flowchart TD
 | **Task** | Binary Classification |
 | **Target** | `assessment_pass` (1 = Pass, 0 = Fail) |
 | **Features** | 25 (17 raw skills + 5 composite indices + 3 aggregate stats) |
-| **Dataset** | Kaggle Career Mapping (N=8,528 students, 17 technical disciplines) |
+| **Dataset** | CareerMap — Mendeley Data (DOI: `10.17632/5z68cvxssn.1`, N=8,528 students, 17 technical disciplines) |
 | **Train/Test Split** | 80% / 20% stratified |
 | **Accuracy Target** | 70–80% (realistic assessment uncertainty) |
 
@@ -126,12 +126,14 @@ The sigmoid boundary models realistic assessment uncertainty: students near the 
 
 | Property | Value |
 |:---|:---|
-| Source | [Kaggle Career Mapping Dataset](https://github.com/TuhinPatra633/Career-Prediction-Using-Machine-Learning) |
-| Total Records | 8,528 (zero duplicates after cleaning) |
-| Technical Skill Columns | 17 (integer scale 0–6) |
-| Psychometric Columns | 10 (float scale 0.0–1.0) — used in EDA only |
-| Career Role Classes | 16 |
-| Generated Target | `assessment_pass` (binary: 0/1) |
+| **Primary Source** | [CareerMap — Mendeley Data](https://data.mendeley.com/datasets/5z68cvxssn/1) (DOI: `10.17632/5z68cvxssn.1`, CC BY 4.0) |
+| **Citation** | Pimplikar, A., Pati, R., Singh, A., & Shah, A. (2023). *CareerMap: Mapping Tech Roles With Personality & Skills*. Mendeley Data, V1. |
+| **Mirror** | [GitHub / Kaggle Career Mapping Mirror](https://github.com/TuhinPatra633/Career-Prediction-Using-Machine-Learning) |
+| **Total Records** | 8,528 (zero duplicates after cleaning, 16 balanced target roles) |
+| **Technical Skill Columns** | 17 (integer scale 0–6) |
+| **Psychometric Columns** | 10 (float scale 0.0–1.0) — used in EDA only |
+| **Career Role Classes** | 16 |
+| **Generated Target** | `assessment_pass` (binary: 0/1) |
 
 ### Technical Skill Columns (Model Features)
 `database_fundamentals`, `computer_architecture`, `distributed_computing_systems`,

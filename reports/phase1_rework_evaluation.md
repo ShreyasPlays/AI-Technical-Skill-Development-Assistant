@@ -58,7 +58,7 @@
 
 ## 4. Label Engineering Design
 
-Since the Kaggle Career Mapping dataset does not contain a native pass/fail label,
+Since the CareerMap dataset (Mendeley Data, DOI: 10.17632/5z68cvxssn.1) does not contain a native pass/fail label,
 a reproducible probabilistic label was engineered as follows:
 
 1. **Weighted core-assessment score** computed from 6 primary skills
