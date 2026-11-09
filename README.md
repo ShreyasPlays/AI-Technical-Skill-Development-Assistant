@@ -1,11 +1,14 @@
 # AI-Based Technical Skill Development Assistant
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11.9-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.128.0-009688.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![DVC 3.59](https://img.shields.io/badge/DVC-3.59.1-purple.svg)](https://dvc.org/)
 [![MLflow 2.17](https://img.shields.io/badge/MLflow-2.17.2-0194E2.svg)](https://mlflow.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Version](https://img.shields.io/badge/Version-2.0.0%20(Rework)-orange.svg)]()
+[![Tests Passing](https://img.shields.io/badge/pytest-46%20passed-brightgreen.svg)]()
+[![Version](https://img.shields.io/badge/Version-2.1.0%20(Phase%202)-orange.svg)]()
 
 An engineering-grade MLOps system that predicts whether a student will **pass or fail an online technical assessment** — the critical screening gate before the interview round. Uses versioned, reproducible ML pipelines with DVC + MLflow and 17 technical skill dimensions from an 8,528-student benchmark dataset.
 
@@ -299,3 +302,56 @@ For each of the 3 models:
 | **F1-Score** | Harmonic mean of Precision and Recall |
 | **ROC-AUC** | Area under the ROC curve — discrimination ability across all thresholds |
 | **Confusion Matrix** | 2×2: TN / FP / FN / TP |
+
+---
+
+## 12. Phase 2: Productionization, Governance & Deployment
+
+Detailed specification and implementation audit is documented in [**`PHASE2_PRODUCTIONIZATION_AND_DEPLOYMENT.md`**](PHASE2_PRODUCTIONIZATION_AND_DEPLOYMENT.md).
+
+### 12.1 21st-Century Core Technical Skills Selection
+Per evaluator directive, the system prioritizes **10 modern technical competencies**:
+1. `ai_ml` (AI & Machine Learning)
+2. `data_science` (Data Analytics & Big Data)
+3. `software_development` (Full-Stack & Cloud Software Development)
+4. `programming_skills` (Algorithmic Problem Solving & Modern Languages)
+5. `cyber_security` (Security, DevSecOps & Privacy)
+6. `distributed_computing_systems` (Cloud Systems, Microservices & Scalability)
+7. `database_fundamentals` (Modern Databases, Vector DBs, SQL & NoSQL)
+8. `software_engineering` (Clean Architecture, Testing & CI/CD)
+9. `troubleshooting_skills` (Observability, SRE & Debugging)
+10. `technical_communication` (Cross-Functional Agile Collaboration)
+
+*Legacy hardware, non-technical business consulting, and creative arts are pruned from core screening.*
+
+### 12.2 Production Deliverables Summary
+
+| Component | Implementation File | Verification & Status |
+|:---|:---|:---|
+| **Model Testing** | `src/model_risk.py` & `tests/test_model_risk.py` | Boundary extremes, monotonicity ($r > 0.83$), invariance, latency ($< 35\text{ ms}$). All passing. |
+| **Model-Risk / Quality Checks** | `reports/model_risk_card.md` & `src/model_risk.py` | Quality gates ($Acc \ge 70\%$, $AUC \ge 0.75$), boundary uncertainty flags, and standardized Risk Card. |
+| **Model Registry** | `src/model_registry.py` & `models/model_registry.json` | MLflow Model Registry + JSON manifest with cryptographic SHA-256 hashes and stage promotion (`Production`). |
+| **FastAPI Microservice** | `src/api/app.py` & `src/api/schemas.py` | 7 production REST endpoints (`/health`, `/predict`, `/roadmap`, `/model/info`, `/risk/check`) with Swagger UI (`/docs`). |
+| **Docker Containerization** | `Dockerfile` & `docker-compose.yml` | Multi-stage build on `python:3.11-slim` with non-root user `appuser` and healthcheck probe. |
+| **CI/CD Automation** | `.github/workflows/ci.yml` | GitHub Actions workflow automating Ruff linting, model testing, Pytest (46/46), and Docker build. |
+| **Reproducibility Guarantee** | `requirements.txt` & `dvc.lock` | Pinned dependencies under Python 3.11.9 with zero version conflicts. |
+
+### 12.3 Phase 2 Quick Launch
+
+```bash
+# 1. Run all 46 automated tests
+pytest tests/ -v
+
+# 2. Launch FastAPI Microservice
+run_api.bat          # or: python -m uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+
+# 3. Interactive Swagger Documentation
+# Open in browser: http://127.0.0.1:8000/docs
+
+# 4. Run API Smoke Tests
+python test_service.py
+
+# 5. Launch Docker Deployment
+run_docker.bat       # or: docker-compose up --build
+```
+

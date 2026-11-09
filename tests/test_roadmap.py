@@ -2,9 +2,8 @@
 Unit tests for RoadmapGenerator and learning recommendation engine.
 """
 
-import pytest
 from src.roadmap import RoadmapGenerator
-from src.data_loader import SKILL_COLUMNS, ROLE_REQUIREMENTS
+from src.data_loader import SKILL_COLUMNS
 
 
 def test_roadmap_generator_initialization():

@@ -32,6 +32,34 @@ SKILL_COLUMNS: List[str] = [
     "graphics_designing",
 ]
 
+# -----------------------------------------------------------------------
+# Phase 2: 21st-Century Relevant Technical Skills Selection
+# Evaluator Recommendation: Focus on core 21st-century computing skills,
+# pruning niche legacy hardware, creative arts, and non-technical fields.
+# -----------------------------------------------------------------------
+CENTURY_21_SKILLS: List[str] = [
+    "ai_ml",
+    "data_science",
+    "software_development",
+    "programming_skills",
+    "cyber_security",
+    "distributed_computing_systems",
+    "database_fundamentals",
+    "software_engineering",
+    "troubleshooting_skills",
+    "technical_communication",
+]
+
+EXCLUDED_LEGACY_SKILLS: Dict[str, str] = {
+    "computer_architecture": "Low-level hardware/silicon design; non-core for 21st-century cloud/software screening.",
+    "computer_forensics_fundamentals": "Niche legacy forensics; modern practices unified under cyber_security.",
+    "networking": "Legacy telecommunications/cabling; modern networking subsumed by distributed systems & security.",
+    "project_management": "Traditional waterfall management; modern delivery uses agile technical communication.",
+    "business_analysis": "Corporate non-technical business consulting rather than technical screening proficiency.",
+    "communication_skills": "Redundant with technical_communication; technical communication is tailored for engineering.",
+    "graphics_designing": "Visual and creative design; distinct from core technical computer science competencies.",
+}
+
 # 10 psychometric / context indicators (0.0 - 1.0 scale)
 CONTEXT_COLUMNS: List[str] = [
     "openness",

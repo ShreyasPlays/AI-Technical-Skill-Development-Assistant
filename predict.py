@@ -15,7 +15,7 @@ The system:
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 import joblib
 import numpy as np
 import pandas as pd
@@ -25,11 +25,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.config import load_config
-from src.data_loader import SKILL_COLUMNS, ROLE_REQUIREMENTS
-from src.feature_engineering import engineer_composite_features
-from src.preprocess import SkillGapAnalyzer
-from src.roadmap import RoadmapGenerator
+from src.config import load_config  # noqa: E402
+from src.data_loader import CENTURY_21_SKILLS, ROLE_REQUIREMENTS, SKILL_COLUMNS  # noqa: E402
+from src.feature_engineering import engineer_composite_features  # noqa: E402
+from src.preprocess import SkillGapAnalyzer  # noqa: E402
+from src.roadmap import RoadmapGenerator  # noqa: E402
 
 
 # -----------------------------------------------------------------------
@@ -61,7 +61,7 @@ def _print_banner():
     banner = """
 ╔══════════════════════════════════════════════════════════════════════╗
 ║   AI Technical Skill Development Assistant — Assessment Predictor   ║
-║             Phase 1 Rework | Binary Classification                  ║
+║          Phase 2 Production CLI | 21st-Century Skills Edition        ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """
     print(banner)
@@ -181,11 +181,17 @@ def main(config_path: str = "configs/config.yaml"):
         sys.exit(1)
 
     # ── Collect skill scores ────────────────────────────────────────────
-    print("Enter your technical skill proficiency scores on a scale of 0 to 6:")
+    print("Select Evaluation Mode:")
+    print("  [1] 21st-Century Core Skills (10 skills: AI/ML, Data Science, Cloud, Dev, Security) [Recommended]")
+    print("  [2] Comprehensive Assessment (All 17 original skills)")
+    mode_choice = input("  Choose mode (default 1): ").strip()
+    target_skills = CENTURY_21_SKILLS if mode_choice != "2" else SKILL_COLUMNS
+
+    print(f"\nEnter your proficiency scores across the {len(target_skills)} skills on a scale of 0 to 6:")
     print("  0 = No experience  |  3 = Intermediate  |  6 = Expert\n")
 
-    skill_scores = {}
-    for skill_key in SKILL_COLUMNS:
+    skill_scores = {s: 0 for s in SKILL_COLUMNS}
+    for skill_key in target_skills:
         display = SKILL_DISPLAY_NAMES.get(skill_key, skill_key.replace("_", " ").title())
         skill_scores[skill_key] = _get_skill_input(skill_key, display)
 
@@ -202,7 +208,7 @@ def main(config_path: str = "configs/config.yaml"):
 
     print(f"\n  Assessment Prediction  :  {label}")
     print(f"  Pass Probability       :  {prob * 100:.1f}%  (Random Forest champion)")
-    print(f"\n  Individual Model Votes:")
+    print("\n  Individual Model Votes:")
     for model_name, vote_info in result["model_votes"].items():
         vote_label = "Pass" if vote_info["prediction"] == 1 else "Fail"
         prob_str = f"{vote_info['pass_probability']*100:.1f}%" if vote_info["pass_probability"] else "N/A"

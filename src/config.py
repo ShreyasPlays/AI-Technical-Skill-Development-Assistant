@@ -65,6 +65,45 @@ class MLflowConfig(BaseModel):
     tracking_uri: str = Field(default="mlruns")
 
 
+class Phase2APIConfig(BaseModel):
+    title: str = Field(default="AI Technical Skill Development Assistant API")
+    version: str = Field(default="2.1.0")
+    host: str = Field(default="0.0.0.0")
+    port: int = Field(default=8000)
+    champion_model_name: str = Field(default="random_forest")
+
+
+class Phase2RegistryConfig(BaseModel):
+    experiment_name: str = Field(default="Assessment_Pass_Predictor")
+    registered_model_name: str = Field(default="AssessmentChampionPredictor")
+    tracking_uri: str = Field(default="mlruns")
+    manifest_path: Path = Path("models/model_registry.json")
+
+
+class Phase2QualityGatesConfig(BaseModel):
+    min_accuracy: float = Field(default=0.70)
+    min_roc_auc: float = Field(default=0.75)
+    max_latency_ms: float = Field(default=25.0)
+
+
+class Phase2Config(BaseModel):
+    century_21_skills: List[str] = Field(default_factory=lambda: [
+        "ai_ml",
+        "data_science",
+        "software_development",
+        "programming_skills",
+        "cyber_security",
+        "distributed_computing_systems",
+        "database_fundamentals",
+        "software_engineering",
+        "troubleshooting_skills",
+        "technical_communication",
+    ])
+    api: Phase2APIConfig = Field(default_factory=Phase2APIConfig)
+    model_registry: Phase2RegistryConfig = Field(default_factory=Phase2RegistryConfig)
+    quality_gates: Phase2QualityGatesConfig = Field(default_factory=Phase2QualityGatesConfig)
+
+
 class AppConfig(BaseModel):
     project_name: str = Field(default="AI-Technical-Skill-Development-Assistant")
     version: str = Field(default="2.0.0")
@@ -73,6 +112,7 @@ class AppConfig(BaseModel):
     roles: Dict[str, Dict[str, int]] = Field(default_factory=dict)
     models: ModelsConfig = Field(default_factory=ModelsConfig)
     mlflow: MLflowConfig = Field(default_factory=MLflowConfig)
+    phase2: Phase2Config = Field(default_factory=Phase2Config)
 
 
 def load_config(config_path: str | Path = "configs/config.yaml") -> AppConfig:

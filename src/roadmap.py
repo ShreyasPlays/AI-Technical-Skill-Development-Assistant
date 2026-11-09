@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import yaml
 
-from src.data_loader import SKILL_COLUMNS, ROLE_REQUIREMENTS, CORE_ASSESSMENT_WEIGHTS
+from src.data_loader import ROLE_REQUIREMENTS, CORE_ASSESSMENT_WEIGHTS
 
 
 DEFAULT_RESOURCES_PATH = Path(__file__).resolve().parent.parent / "configs" / "learning_resources.yaml"

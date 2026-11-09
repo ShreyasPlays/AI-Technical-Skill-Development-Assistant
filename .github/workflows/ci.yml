@@ -1,0 +1,75 @@
+name: Phase 2 CI/CD Pipeline - Productionization & Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  quality-gate-and-test:
+    name: Code Quality, Model Behavioral Tests & Pipeline Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.9"
+          cache: "pip"
+
+      - name: Install Pinned Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Code Quality & Linting (Ruff)
+        run: |
+          ruff check src tests predict.py
+
+      - name: Verify Model Behavioral Testing & Risk Gates
+        run: |
+          python -m src.model_risk
+
+      - name: Verify Model Registry Lineage
+        run: |
+          python -m src.model_registry
+
+      - name: Execute Full Automated Test Suite (Pytest)
+        run: |
+          pytest tests/ -v --durations=10
+
+  docker-build-and-verify:
+    name: Docker Containerization Build & Health Verification
+    needs: quality-gate-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ai-technical-skill-assistant:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-Test Docker Container Runtime
+        run: |
+          docker run -d --name test_api -p 8000:8000 ai-technical-skill-assistant:latest
+          sleep 5
+          docker ps
+          curl --fail http://localhost:8000/health || exit 1
+          docker stop test_api
+

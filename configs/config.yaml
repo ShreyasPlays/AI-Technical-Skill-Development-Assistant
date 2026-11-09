@@ -164,3 +164,38 @@ models:
 mlflow:
   experiment_name: "Assessment_Pass_Predictor"
   tracking_uri: "mlruns"
+
+# -----------------------------------------------------------------------
+# Phase 2: Productionization & Deployment Configuration
+# -----------------------------------------------------------------------
+phase2:
+  century_21_skills:
+    - "ai_ml"
+    - "data_science"
+    - "software_development"
+    - "programming_skills"
+    - "cyber_security"
+    - "distributed_computing_systems"
+    - "database_fundamentals"
+    - "software_engineering"
+    - "troubleshooting_skills"
+    - "technical_communication"
+
+  api:
+    title: "AI Technical Skill Development Assistant API"
+    version: "2.1.0"
+    host: "0.0.0.0"
+    port: 8000
+    champion_model_name: "random_forest"
+
+  model_registry:
+    experiment_name: "Assessment_Pass_Predictor"
+    registered_model_name: "AssessmentChampionPredictor"
+    tracking_uri: "mlruns"
+    manifest_path: "models/model_registry.json"
+
+  quality_gates:
+    min_accuracy: 0.70
+    min_roc_auc: 0.75
+    max_latency_ms: 25.0
+

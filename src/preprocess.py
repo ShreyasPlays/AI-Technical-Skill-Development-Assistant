@@ -18,7 +18,6 @@ from sklearn.model_selection import train_test_split
 from src.config import AppConfig, load_config
 from src.data_loader import (
     CORE_ASSESSMENT_WEIGHTS,
-    SKILL_COLUMNS,
     load_raw_data,
     ingest_kaggle_dataset,
 )

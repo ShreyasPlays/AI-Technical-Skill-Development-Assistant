@@ -1,0 +1,27 @@
+# Docker build exclusions
+.git
+.gitignore
+.gitattributes
+.venv
+venv
+ENV
+env
+__pycache__
+*.py[cod]
+*$py.class
+.pytest_cache
+.ruff_cache
+.coverage
+htmlcov
+.dvc/cache
+.dvc/tmp
+data/raw/*.csv
+*.log
+mlruns
+.mlflow
+notebooks/*.ipynb
+*.pptx
+*.pdf
+.DS_Store
+Thumbs.db
+
