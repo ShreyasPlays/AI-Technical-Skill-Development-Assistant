@@ -1,0 +1,17 @@
+{
+  "decision_tree": {
+    "run_id": "7936746bb78f4233bbee9f190b66f784",
+    "artifact_path": "models\\decision_tree.joblib",
+    "train_accuracy": 0.7351216652008209
+  },
+  "random_forest": {
+    "run_id": "aa121e3055a2489da82c2d3b8a9e9716",
+    "artifact_path": "models\\random_forest.joblib",
+    "train_accuracy": 0.7445030782761654
+  },
+  "logistic_regression": {
+    "run_id": "251e97784fde4c07a291e29eac5c1527",
+    "artifact_path": "models\\logistic_regression.joblib",
+    "train_accuracy": 0.7330694810905892
+  }
+}
