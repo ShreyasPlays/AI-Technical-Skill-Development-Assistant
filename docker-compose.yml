@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Primary FastAPI inference & skill-gap diagnostic microservice
   skill-assistant-api:

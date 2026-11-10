@@ -16,10 +16,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11.9
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11.9"
+          python-version: "3.11"
           cache: "pip"
 
       - name: Install Pinned Dependencies
@@ -61,6 +61,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: ai-technical-skill-assistant:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -72,4 +73,5 @@ jobs:
           docker ps
           curl --fail http://localhost:8000/health || exit 1
           docker stop test_api
+          docker rm test_api
 
