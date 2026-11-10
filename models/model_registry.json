@@ -1,0 +1,99 @@
+{
+  "registry_version": "2.1.0",
+  "last_updated": "2026-11-10T12:40:22.755528Z",
+  "active_champion": {
+    "model_name": "random_forest",
+    "model_class": "RandomForestClassifier",
+    "stage": "Production",
+    "version": "1.0.0",
+    "artifact_path": "models\\random_forest.joblib",
+    "sha256": "be73f9770e8eaa057ce36b536e32f1426625ee902da4adb099093db06b5f69bf",
+    "mlflow_experiment": "Assessment_Pass_Predictor",
+    "mlflow_run_id": "aa121e3055a2489da82c2d3b8a9e9716",
+    "metrics": {
+      "accuracy": 0.7351,
+      "precision": 0.7211,
+      "recall": 0.6917,
+      "f1_score": 0.7061,
+      "roc_auc": 0.7949
+    },
+    "quality_passed": true
+  },
+  "candidate_models": {
+    "decision_tree": {
+      "stage": "Staging",
+      "artifact_path": "models\\decision_tree.joblib",
+      "sha256": "3348a84ef20260df454ce4b68161f2f3bbbbab5b1bca3a0cbccbb3b9d3ae9c08",
+      "mlflow_run_id": "7936746bb78f4233bbee9f190b66f784",
+      "metrics": {
+        "accuracy": 0.7204,
+        "precision": 0.7238,
+        "recall": 0.6344,
+        "f1_score": 0.6762,
+        "roc_auc": 0.7885
+      }
+    },
+    "logistic_regression": {
+      "stage": "Staging",
+      "artifact_path": "models\\logistic_regression.joblib",
+      "sha256": "ac88f9c5e6dab95601bf0649bf73d907f5f2774027ee431f429bbcfcf3d9040d",
+      "mlflow_run_id": "251e97784fde4c07a291e29eac5c1527",
+      "metrics": {
+        "accuracy": 0.7345,
+        "precision": 0.7117,
+        "recall": 0.7108,
+        "f1_score": 0.7113,
+        "roc_auc": 0.7974
+      }
+    }
+  },
+  "feature_contract": {
+    "total_features": 25,
+    "century_21_core_skills": [
+      "ai_ml",
+      "data_science",
+      "software_development",
+      "programming_skills",
+      "cyber_security",
+      "distributed_computing_systems",
+      "database_fundamentals",
+      "software_engineering",
+      "troubleshooting_skills",
+      "technical_communication"
+    ],
+    "all_feature_columns": [
+      "database_fundamentals",
+      "computer_architecture",
+      "distributed_computing_systems",
+      "cyber_security",
+      "networking",
+      "software_development",
+      "programming_skills",
+      "project_management",
+      "computer_forensics_fundamentals",
+      "technical_communication",
+      "ai_ml",
+      "software_engineering",
+      "business_analysis",
+      "communication_skills",
+      "data_science",
+      "troubleshooting_skills",
+      "graphics_designing",
+      "technical_overall_mean",
+      "technical_breadth",
+      "technical_depth",
+      "ai_data_readiness",
+      "systems_readiness",
+      "software_dev_readiness",
+      "cybersecurity_readiness",
+      "business_comm_readiness"
+    ],
+    "scaler_fitted_on": 0
+  },
+  "governance": {
+    "framework": "scikit-learn",
+    "python_runtime": "3.11.9",
+    "license": "MIT",
+    "inference_service": "FastAPI (REST / OpenAPI 3.0)"
+  }
+}

@@ -63,13 +63,16 @@ secrets.yaml
 !/data/raw/.gitkeep
 !/data/raw/*.dvc
 !/data/raw/.gitignore
+!/data/raw/skills_dataset.csv
 /data/processed/*
 !/data/processed/.gitkeep
 !/data/processed/*.dvc
 !/data/processed/.gitignore
+!/data/processed/*.parquet
 !/data/processed/feature_metadata.json
 /models/*
 !/models/.gitkeep
 !/models/*.dvc
 !/models/.gitignore
-!/models/training_summary.json
+!/models/*.joblib
+!/models/*.json

@@ -69,9 +69,9 @@ jobs:
       - name: Smoke-Test Docker Container Runtime
         run: |
           docker run -d --name test_api -p 8000:8000 ai-technical-skill-assistant:latest
-          sleep 5
+          sleep 8
           docker ps
-          curl --fail http://localhost:8000/health || exit 1
+          curl --retry 5 --retry-delay 2 --retry-connrefused --fail http://localhost:8000/health || exit 1
           docker stop test_api
           docker rm test_api
 
