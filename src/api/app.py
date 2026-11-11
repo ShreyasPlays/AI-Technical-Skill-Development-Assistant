@@ -123,7 +123,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI Technical Skill Development Assistant API",
-    description="Engineering-grade MLOps inference and skill-gap diagnostic service for campus placement readiness.",
+    description="Engineering-grade MLOps inference and diagnostic service for 21st-century technical skill competency and holistic learner development.",
     version="2.1.0",
     lifespan=lifespan,
     docs_url="/docs",
