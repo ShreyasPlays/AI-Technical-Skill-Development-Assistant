@@ -38,9 +38,30 @@ class Century21SkillProfile(BaseModel):
 
 class PredictRequest(BaseModel):
     """Request payload for real-time assessment pass/fail prediction."""
-    student_id: Optional[str] = Field(default=None, description="Optional student identifier (e.g., RVCE26CS001)")
+    student_id: Optional[str] = Field(default="RVCE26CS001", description="Optional student identifier (e.g., RVCE26CS001)")
     skills: Century21SkillProfile = Field(..., description="Student technical skill ratings (0-6 scale)")
     target_role: Optional[str] = Field(default=None, description="Optional target industry role for roadmap analysis")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "student_id": "STUDENT_RVCE_01",
+                "skills": {
+                    "ai_ml": 4,
+                    "data_science": 4,
+                    "software_development": 4,
+                    "programming_skills": 5,
+                    "cyber_security": 3,
+                    "distributed_computing_systems": 3,
+                    "database_fundamentals": 4,
+                    "software_engineering": 4,
+                    "troubleshooting_skills": 4,
+                    "technical_communication": 4,
+                },
+                "target_role": None,
+            }
+        }
+    }
 
 
 class PredictionResponse(BaseModel):

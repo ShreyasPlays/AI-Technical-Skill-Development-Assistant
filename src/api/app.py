@@ -246,15 +246,16 @@ def predict_assessment_pass(payload: PredictRequest):
 
     # Optional roadmap generation if target role is provided
     roadmap_summary = None
-    if payload.target_role:
-        if payload.target_role not in ROLE_CLASSES:
+    target_role = payload.target_role
+    if target_role and target_role.strip().lower() not in ["string", "none", ""]:
+        if target_role not in ROLE_CLASSES:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Target role '{payload.target_role}' not supported. Allowed roles: {ROLE_CLASSES}",
+                detail=f"Target role '{target_role}' not supported. Allowed roles: {ROLE_CLASSES}",
             )
-        gap_res = state.skill_gap_analyzer.analyze_gap(skills_dict, payload.target_role)
+        gap_res = state.skill_gap_analyzer.analyze_gap(skills_dict, target_role)
         roadmap_summary = {
-            "target_role": payload.target_role,
+            "target_role": target_role,
             "average_skill_gap": gap_res["average_skill_gap"],
             "top_gap_skills": [g["skill"] for g in gap_res["skill_gaps"] if g["gap"] > 0][:3],
         }
