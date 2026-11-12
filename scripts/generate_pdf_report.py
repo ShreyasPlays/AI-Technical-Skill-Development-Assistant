@@ -904,3 +904,4 @@ if __name__ == "__main__":
     out_dir.mkdir(parents=True, exist_ok=True)
     pdf_path = out_dir / "AI_Technical_Skill_Development_Assistant_Comprehensive_Engineering_Report.pdf"
     build_pdf(pdf_path)
+
